@@ -1,0 +1,16 @@
+{
+  "name": "movie-catalog-web",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "lint": "eslint .",
+    "serve": "npx --yes serve public"
+  },
+  "devDependencies": {
+    "eslint": "^10.8.1",
+    "globals": "^17.11.0",
+    "vitest": "^4.1.11"
+  }
+}

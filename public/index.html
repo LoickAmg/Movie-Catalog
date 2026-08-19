@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ciné Catalogue</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta
+      name="description"
+      content="Catalogue de films, likes et recommandations — sans backend, sans clé API."
+    />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>🎬 Ciné Catalogue</h1>
+      <nav class="tabs" id="tabs">
+        <button type="button" class="tab active" data-view="catalog">Catalogue</button>
+        <button type="button" class="tab" data-view="favorites">
+          Mes favoris <span id="favorites-count" class="badge">0</span>
+        </button>
+        <button type="button" class="tab" data-view="recommend">Recommandations</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="view-catalog" class="view">
+        <div class="controls">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Rechercher un titre ou un acteur…"
+            aria-label="Rechercher"
+          />
+          <select id="genre-select" aria-label="Filtrer par genre">
+            <option value="">Tous les genres</option>
+          </select>
+        </div>
+        <p id="catalog-status" class="status" aria-live="polite"></p>
+        <div id="catalog-grid" class="grid"></div>
+        <div class="pagination" id="pagination">
+          <button type="button" id="prev-page">← Précédent</button>
+          <span id="page-indicator"></span>
+          <button type="button" id="next-page">Suivant →</button>
+        </div>
+      </section>
+
+      <section id="view-favorites" class="view hidden">
+        <p id="favorites-status" class="status" aria-live="polite"></p>
+        <div id="favorites-grid" class="grid"></div>
+      </section>
+
+      <section id="view-recommend" class="view hidden">
+        <p id="recommend-explanation" class="status" aria-live="polite"></p>
+        <div id="recommend-grid" class="grid"></div>
+      </section>
+    </main>
+
+    <div id="detail-overlay" class="overlay hidden">
+      <div class="detail-card" id="detail-card"></div>
+    </div>
+
+    <footer>
+      <p>
+        Données de films : <a href="https://en.wikipedia.org/wiki/Wikipedia" target="_blank" rel="noopener">Wikipedia</a>,
+        via le jeu de données MIT
+        <a href="https://github.com/prust/wikipedia-movie-data" target="_blank" rel="noopener"
+          >prust/wikipedia-movie-data</a
+        >. Aucune clé API, aucun serveur — tout tourne dans ton navigateur.
+      </p>
+    </footer>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
