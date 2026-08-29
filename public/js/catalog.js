@@ -4,6 +4,31 @@
  * Aucune dépendance au DOM — testable directement en Node.
  */
 
+export function validateMovies(value) {
+  if (!Array.isArray(value)) throw new Error("Le catalogue doit être un tableau");
+  return value.map((movie, index) => {
+    if (!movie || typeof movie !== "object") {
+      throw new Error(`Film invalide à l'index ${index}`);
+    }
+    if (!Number.isInteger(movie.id)) {
+      throw new Error(`Film invalide à l'index ${index}: id manquant ou non entier`);
+    }
+    if (typeof movie.title !== "string" || movie.title.trim() === "") {
+      throw new Error(`Film invalide à l'index ${index}: titre manquant`);
+    }
+    if (!Array.isArray(movie.genres) || movie.genres.some((genre) => typeof genre !== "string")) {
+      throw new Error(`Film invalide à l'index ${index}: genres invalides`);
+    }
+    if (movie.cast !== undefined && (!Array.isArray(movie.cast) || movie.cast.some((actor) => typeof actor !== "string"))) {
+      throw new Error(`Film invalide à l'index ${index}: casting invalide`);
+    }
+    if (movie.year !== undefined && (!Number.isInteger(movie.year) || movie.year < 1888 || movie.year > 2200)) {
+      throw new Error(`Film invalide à l'index ${index}: année invalide`);
+    }
+    return movie;
+  });
+}
+
 export function searchMovies(movies, query) {
   const q = (query || "").trim().toLowerCase();
   if (!q) return movies;

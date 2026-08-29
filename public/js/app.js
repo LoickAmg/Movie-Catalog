@@ -5,7 +5,15 @@
  * recommend.js / likes.js — ce fichier ne fait que le pont avec le DOM.
  */
 
-import { collectGenres, filterByGenre, paginate, posterColor, posterEmoji, searchMovies } from "./catalog.js";
+import {
+  collectGenres,
+  filterByGenre,
+  paginate,
+  posterColor,
+  posterEmoji,
+  searchMovies,
+  validateMovies,
+} from "./catalog.js";
 import { buildGenreProfile, recommend, topProfileGenres } from "./recommend.js";
 import { createLikesStore } from "./likes.js";
 
@@ -319,7 +327,7 @@ async function init() {
   try {
     const response = await fetch("./data/movies.json");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    allMovies = await response.json();
+    allMovies = validateMovies(await response.json());
   } catch (error) {
     els.catalogStatus.textContent =
       "Impossible de charger le catalogue de films. Vérifie ta connexion et réessaie.";

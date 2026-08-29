@@ -6,6 +6,7 @@ import {
   posterColor,
   posterEmoji,
   searchMovies,
+  validateMovies,
 } from "../public/js/catalog.js";
 
 const MOVIES = [
@@ -13,6 +14,18 @@ const MOVIES = [
   { id: 2, title: "Notting Hill", genres: ["Romance", "Comedy"], cast: ["Julia Roberts"] },
   { id: 3, title: "Matrix Reloaded", genres: ["Action"], cast: ["Carrie-Anne Moss"] },
 ];
+
+describe("validateMovies", () => {
+  it("accepts the required movie shape", () => {
+    expect(validateMovies(MOVIES)).toEqual(MOVIES);
+  });
+
+  it("rejects malformed records instead of failing later in the UI", () => {
+    expect(() => validateMovies([{ id: 1, title: "", genres: [] }])).toThrow("titre manquant");
+    expect(() => validateMovies([{ id: "1", title: "Film", genres: [] }])).toThrow("id manquant");
+    expect(() => validateMovies([{ id: 1, title: "Film", genres: [42] }])).toThrow("genres invalides");
+  });
+});
 
 describe("searchMovies", () => {
   it("matches by title, case-insensitive", () => {
