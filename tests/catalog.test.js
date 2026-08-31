@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   collectGenres,
+  collectYears,
   filterByGenre,
+  filterByType,
   paginate,
   posterColor,
   posterEmoji,
+  posterFallback,
   searchMovies,
+  sortCatalog,
   validateMovies,
 } from "../public/js/catalog.js";
 
@@ -120,5 +124,40 @@ describe("posterEmoji", () => {
   it("falls back to a generic clapperboard for unknown/empty genres", () => {
     expect(posterEmoji([])).toBe("🎬");
     expect(posterEmoji(["TotallyMadeUpGenre"])).toBe("🎬");
+  });
+});
+
+
+describe("films et séries", () => {
+  const MIXED = [
+    { id: 1, title: "The Matrix", media_type: "movie", year: 1999, genres: ["Action"], overview: "A cyberpunk classic" },
+    { id: 1_000_001, title: "Dark", media_type: "tv", year: 2017, genres: ["Science-fiction"], networks: ["Netflix"] },
+    { id: 2, title: "Arrival", media_type: "movie", year: 2016, genres: ["Science-fiction"], rating: 8.0 },
+  ];
+
+  it("validates movie and tv media types", () => {
+    expect(validateMovies(MIXED)).toEqual(MIXED);
+    expect(() => validateMovies([{ id: 1, title: "Bad", media_type: "book", genres: [] }])).toThrow("type inconnu");
+  });
+
+  it("filters by media type and year", () => {
+    expect(filterByType(MIXED, "tv").map((item) => item.title)).toEqual(["Dark"]);
+    expect(collectYears(MIXED)).toEqual([2017, 2016, 1999]);
+  });
+
+  it("searches synopsis and networks as well as titles", () => {
+    expect(searchMovies(MIXED, "cyberpunk")).toHaveLength(1);
+    expect(searchMovies(MIXED, "netflix")).toHaveLength(1);
+  });
+
+  it("sorts by rating or title without mutating the source", () => {
+    expect(sortCatalog(MIXED, "rating").map((item) => item.title)).toEqual(["Arrival", "Dark", "The Matrix"]);
+    expect(sortCatalog(MIXED, "title").map((item) => item.title)).toEqual(["Arrival", "Dark", "The Matrix"]);
+    expect(MIXED[0].title).toBe("The Matrix");
+  });
+
+  it("uses a sober text fallback instead of an emoji", () => {
+    expect(posterFallback("The Matrix", "movie")).toBe("TM · FILM");
+    expect(posterFallback("Dark", "tv")).toBe("D · SÉRIE");
   });
 });

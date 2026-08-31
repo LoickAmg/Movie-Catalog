@@ -3,70 +3,123 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ciné Catalogue</title>
+    <title>Ciné Catalogue — films et séries</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta
       name="description"
-      content="Catalogue de films, likes et recommandations — sans backend, sans clé API."
+      content="Un catalogue personnel de films et séries, actualisable, avec favoris et recommandations explicables."
     />
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
     <header class="topbar">
-      <h1>🎬 Ciné Catalogue</h1>
-      <nav class="tabs" id="tabs">
-        <button type="button" class="tab active" data-view="catalog">Catalogue</button>
+      <div class="brand-block">
+        <p class="eyebrow">Index audiovisuel</p>
+        <h1>Ciné Catalogue</h1>
+        <p class="tagline">Films et séries à découvrir, garder et retrouver.</p>
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Navigation principale">
+        <button type="button" class="tab active" data-view="catalog">Explorer</button>
         <button type="button" class="tab" data-view="favorites">
-          Mes favoris <span id="favorites-count" class="badge">0</span>
+          Ma liste <span id="favorites-count" class="badge">0</span>
         </button>
-        <button type="button" class="tab" data-view="recommend">Recommandations</button>
+        <button type="button" class="tab" data-view="recommend">Pour moi</button>
       </nav>
     </header>
 
     <main>
-      <section id="view-catalog" class="view">
-        <div class="controls">
-          <input
-            id="search-input"
-            type="search"
-            placeholder="Rechercher un titre ou un acteur…"
-            aria-label="Rechercher"
-          />
-          <select id="genre-select" aria-label="Filtrer par genre">
-            <option value="">Tous les genres</option>
-          </select>
+      <section id="view-catalog" class="view" aria-labelledby="catalog-heading">
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">Bibliothèque vivante</p>
+            <h2 id="catalog-heading">Que regarderez-vous ensuite&nbsp;?</h2>
+          </div>
+          <p class="intro-copy">Un catalogue local alimenté par des sources publiques. Filtrez par format, époque, genre ou note.</p>
+        </div>
+
+        <div class="controls" aria-label="Filtres du catalogue">
+          <label class="search-control">
+            <span class="sr-only">Rechercher un titre, une personne ou un synopsis</span>
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Titre, acteur, réalisateur, synopsis…"
+              aria-label="Rechercher un titre, une personne ou un synopsis"
+            />
+          </label>
+          <label>
+            <span class="sr-only">Format</span>
+            <select id="type-select" aria-label="Filtrer par format">
+              <option value="">Films et séries</option>
+              <option value="movie">Films</option>
+              <option value="tv">Séries</option>
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Genre</span>
+            <select id="genre-select" aria-label="Filtrer par genre">
+              <option value="">Tous les genres</option>
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Année</span>
+            <select id="year-select" aria-label="Filtrer par année">
+              <option value="">Toutes les années</option>
+            </select>
+          </label>
+          <label>
+            <span class="sr-only">Trier</span>
+            <select id="sort-select" aria-label="Trier le catalogue">
+              <option value="recent">Plus récents</option>
+              <option value="rating">Mieux notés</option>
+              <option value="title">Titre</option>
+            </select>
+          </label>
         </div>
         <p id="catalog-status" class="status" aria-live="polite"></p>
         <div id="catalog-grid" class="grid"></div>
+        <p id="catalog-empty" class="empty-state hidden">Aucun titre ne correspond à ces critères.</p>
         <div class="pagination" id="pagination">
-          <button type="button" id="prev-page">← Précédent</button>
-          <span id="page-indicator"></span>
-          <button type="button" id="next-page">Suivant →</button>
+          <button type="button" id="prev-page">Précédent</button>
+          <span id="page-indicator" aria-live="polite"></span>
+          <button type="button" id="next-page">Suivant</button>
         </div>
       </section>
 
-      <section id="view-favorites" class="view hidden">
-        <p id="favorites-status" class="status" aria-live="polite"></p>
+      <section id="view-favorites" class="view hidden" aria-labelledby="favorites-heading">
+        <div class="section-intro compact">
+          <div>
+            <p class="eyebrow">Sélection personnelle</p>
+            <h2 id="favorites-heading">Ma liste</h2>
+          </div>
+          <p id="favorites-status" class="status" aria-live="polite"></p>
+        </div>
         <div id="favorites-grid" class="grid"></div>
+        <p id="favorites-empty" class="empty-state hidden">Ajoutez des films ou des séries à votre liste pour les retrouver ici.</p>
       </section>
 
-      <section id="view-recommend" class="view hidden">
-        <p id="recommend-explanation" class="status" aria-live="polite"></p>
+      <section id="view-recommend" class="view hidden" aria-labelledby="recommend-heading">
+        <div class="section-intro compact">
+          <div>
+            <p class="eyebrow">Sélection expliquée</p>
+            <h2 id="recommend-heading">Pour moi</h2>
+          </div>
+          <p id="recommend-explanation" class="status" aria-live="polite"></p>
+        </div>
         <div id="recommend-grid" class="grid"></div>
+        <p id="recommend-empty" class="empty-state hidden">Ajoutez quelques titres à votre liste : les recommandations seront calculées à partir de vos genres préférés.</p>
       </section>
     </main>
 
-    <div id="detail-overlay" class="overlay hidden">
-      <div class="detail-card" id="detail-card"></div>
+    <div id="detail-overlay" class="overlay hidden" role="presentation">
+      <div class="detail-card" id="detail-card" role="dialog" aria-modal="true" aria-labelledby="detail-title"></div>
     </div>
 
     <footer>
       <p>
-        Données de films : <a href="https://en.wikipedia.org/wiki/Wikipedia" target="_blank" rel="noopener">Wikipedia</a>,
-        via le jeu de données MIT
-        <a href="https://github.com/prust/wikipedia-movie-data" target="_blank" rel="noopener"
-          >prust/wikipedia-movie-data</a
-        >. Aucune clé API, aucun serveur — tout tourne dans ton navigateur.
+        Catalogue local actualisable via <a href="https://developer.themoviedb.org/docs/getting-started" target="_blank" rel="noopener">TMDB</a>
+        et <a href="https://www.tvmaze.com/api" target="_blank" rel="noopener">TVmaze</a>.
+        Les recommandations restent locales et explicables ; aucune clé n’est exposée dans le navigateur.
       </p>
     </footer>
 

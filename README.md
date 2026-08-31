@@ -101,3 +101,22 @@ fois sur le repo :
 - Mode "films similaires à celui-ci" directement depuis la fiche détaillée
 - Conteneuriser avec Docker pour un usage local (voir le projet transversal
   #25 de la roadmap) — optionnel ici puisque le site est déjà 100% statique
+
+
+## Version films, séries et catalogue actualisable
+
+Le site sert maintenant `public/data/catalog.json`, un format commun aux médias `movie` et `tv`. Les séries peuvent contenir une affiche, un synopsis, une note, une date de première diffusion, un diffuseur et des informations de saisons ou d’épisodes. Le catalogue historique de films reste un filet local pour que le site conserve un mode de démonstration sans réseau.
+
+Le script `scripts/refresh_catalog.py` peut construire un catalogue étendu. TVmaze fournit un index large de séries sans clé ; TMDB fournit les films et séries populaires les plus récents lorsque `TMDB_BEARER_TOKEN` est présent. La clé n’est jamais placée dans `public/` ni exposée au navigateur.
+
+Pour générer localement un catalogue avec le catalogue historique et une première sélection de séries :
+
+```powershell
+py -3 scripts\refresh_catalog.py --movie-pages 0 --tv-pages 0 --tvmaze-pages 8 --allow-no-tmdb
+```
+
+Pour un catalogue régulièrement actualisé, le workflow `.github/workflows/refresh-catalog.yml` utilise le secret GitHub `TMDB_BEARER_TOKEN`, puis commit uniquement `public/data/catalog.json` quand le contenu a changé. Il suffit de créer ce secret dans `Settings > Secrets and variables > Actions`, de pousser le workflow et de lancer une première synchronisation avec `workflow_dispatch`. Le workflow de publication Pages se relance alors sur le commit généré.
+
+L’interface propose désormais une recherche dans les titres, le synopsis, le casting et les diffuseurs, un filtre Films / Séries, des filtres par genre et année, un tri par récence, note ou titre, des fiches enrichies et des recommandations locales basées sur les genres des titres de votre liste. Les recommandations sont explicables et privées dans le navigateur ; elles ne prétendent pas remplacer un profil serveur ou un moteur éditorial.
+
+Le pied de page affiche les sources utilisées. Vérifiez les conditions d’utilisation et d’attribution de [TMDB](https://developer.themoviedb.org/docs/getting-started) et [TVmaze](https://www.tvmaze.com/api) avant une mise en production publique.

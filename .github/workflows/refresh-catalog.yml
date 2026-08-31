@@ -1,0 +1,58 @@
+name: Refresh film and series catalogue
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 5 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalogue-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh local catalogue
+        env:
+          TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
+          TMDB_MOVIE_PAGES: "20"
+          TMDB_TV_PAGES: "20"
+          TVMAZE_PAGES: "8"
+        run: python scripts/refresh_catalog.py
+
+      - name: Validate generated catalogue
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("public/data/catalog.json")
+          items = json.loads(path.read_text(encoding="utf-8"))
+          assert len(items) >= 1000, f"Catalogue unexpectedly small: {len(items)}"
+          assert any(item.get("media_type") == "movie" for item in items)
+          assert any(item.get("media_type") == "tv" for item in items)
+          print(f"Validated {len(items)} catalogue records")
+          PY
+
+      - name: Commit refreshed catalogue
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/catalog.json
+          if git diff --cached --quiet; then
+            echo "Catalogue is already up to date"
+          else
+            git commit -m "chore(data): refresh films and series catalogue"
+            git push
+          fi
