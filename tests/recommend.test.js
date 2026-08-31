@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGenreProfile, recommend, scoreMovie, topProfileGenres } from "../public/js/recommend.js";
+import { buildGenreProfile, buildPeopleProfile, recommend, recommendDetailed, scoreMovie, topProfileGenres } from "../public/js/recommend.js";
 
 const MOVIES = [
   { id: 1, title: "Liked Action 1", year: 2020, genres: ["Action", "Thriller"] },
@@ -77,5 +77,35 @@ describe("topProfileGenres", () => {
 
   it("returns an empty list for an empty profile", () => {
     expect(topProfileGenres({})).toEqual([]);
+  });
+});
+
+
+describe("people profiles", () => {
+  it("counts directors and actors case-insensitively", () => {
+    const profile = buildPeopleProfile([
+      { director: "Ava DuVernay", cast: ["Actor One", "Actor Two"] },
+      { directors: ["ava duvernay"], cast: ["Actor Two"] },
+    ]);
+    expect(profile.directors.get("ava duvernay").count).toBe(2);
+    expect(profile.actors.get("actor two").count).toBe(2);
+  });
+});
+
+describe("recommendDetailed", () => {
+  it("returns an explanation for each recommended title", () => {
+    const mixed = [
+      { id: 1, title: "Liked film", media_type: "movie", year: 2020, genres: ["Action"], director: "Ava DuVernay", cast: ["Actor One"] },
+      { id: 2, title: "Liked series", media_type: "tv", year: 2021, genres: ["Drama"], directors: ["Other Director"], cast: ["Actor Two"] },
+      { id: 3, title: "Suggested series", media_type: "tv", year: 2023, genres: ["Drama"], directors: ["Ava DuVernay"], cast: ["Actor Three"] },
+      { id: 4, title: "Suggested actor film", media_type: "movie", year: 2022, genres: ["Comedy"], cast: ["Actor Two"] },
+    ];
+    const result = recommendDetailed(mixed, [1, 2], 5);
+    expect(result).toHaveLength(2);
+    expect(result[0].movie.id).toBe(3);
+    expect(result[0].matchedDirectors).toEqual(["Ava DuVernay"]);
+    expect(result[0].matchedActors).toEqual([]);
+    expect(result[1].matchedActors).toEqual(["Actor Two"]);
+    expect(result[0].score).toBeGreaterThan(result[1].score);
   });
 });
