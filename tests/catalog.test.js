@@ -29,6 +29,21 @@ describe("validateMovies", () => {
     expect(() => validateMovies([{ id: "1", title: "Film", genres: [] }])).toThrow("id manquant");
     expect(() => validateMovies([{ id: 1, title: "Film", genres: [42] }])).toThrow("genres invalides");
   });
+
+  it("accepts null as \"no value\" for optional fields (TVmaze entries without a rating/year)", () => {
+    const entry = {
+      id: 1001624,
+      title: "Moment of Truth",
+      genres: ["Série"],
+      media_type: "tv",
+      rating: null,
+      year: null,
+      cast: null,
+      type: null,
+    };
+    expect(() => validateMovies([entry])).not.toThrow();
+    expect(validateMovies([entry])).toEqual([entry]);
+  });
 });
 
 describe("searchMovies", () => {

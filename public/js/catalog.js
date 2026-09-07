@@ -32,19 +32,19 @@ export function validateMovies(value) {
     if (!Array.isArray(movie.genres) || movie.genres.some((genre) => typeof genre !== "string")) {
       throw new Error(`Média invalide à l'index ${index}: genres invalides`);
     }
-    if (movie.media_type !== undefined && !["movie", "tv"].includes(movie.media_type)) {
+    if (movie.media_type != null && !["movie", "tv"].includes(movie.media_type)) {
       throw new Error(`Média invalide à l'index ${index}: type inconnu`);
     }
-    if (movie.type !== undefined && !["movie", "tv"].includes(movie.type)) {
+    if (movie.type != null && !["movie", "tv"].includes(movie.type)) {
       throw new Error(`Média invalide à l'index ${index}: type inconnu`);
     }
-    if (movie.cast !== undefined && (!Array.isArray(movie.cast) || movie.cast.some((actor) => typeof actor !== "string"))) {
+    if (movie.cast != null && (!Array.isArray(movie.cast) || movie.cast.some((actor) => typeof actor !== "string"))) {
       throw new Error(`Média invalide à l'index ${index}: casting invalide`);
     }
-    if (movie.year !== undefined && (!Number.isInteger(movie.year) || movie.year < 1888 || movie.year > 2200)) {
+    if (movie.year != null && (!Number.isInteger(movie.year) || movie.year < 1888 || movie.year > 2200)) {
       throw new Error(`Média invalide à l'index ${index}: année invalide`);
     }
-    if (movie.rating !== undefined && (typeof movie.rating !== "number" || movie.rating < 0 || movie.rating > 10)) {
+    if (movie.rating != null && (typeof movie.rating !== "number" || movie.rating < 0 || movie.rating > 10)) {
       throw new Error(`Média invalide à l'index ${index}: note invalide`);
     }
     return movie;

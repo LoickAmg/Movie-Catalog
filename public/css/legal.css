@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  --bg: #11100f;
+  --surface: #1c1a18;
+  --text: #f1ede4;
+  --muted: #a39a8c;
+  --accent: #d25445;
+  --accent-2: #d8b77a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+.wrap { width: min(720px, 100%); margin: auto; padding: 3.5rem 2rem 5rem; }
+.eye { color: var(--accent-2); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 0.75rem; }
+h1 { font-size: 1.9rem; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.1rem; color: var(--accent-2); margin: 2rem 0 0.5rem; }
+p { color: var(--text); margin: 0 0 1rem; max-width: 60ch; }
+a { color: var(--accent-2); }
+.small { color: var(--muted); font-size: 0.8rem; }
+.back { display: inline-block; margin-bottom: 2rem; color: var(--accent-2); text-decoration: none; font-size: 0.85rem; }
+.note { border-left: 3px solid var(--accent); background: var(--surface); padding: 0.9rem 1.2rem; margin: 1.5rem 0; }
+button {
+  background: transparent;
+  color: var(--accent-2);
+  border: 1px solid var(--accent-2);
+  padding: 0.7rem 1.5rem;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1.5rem;
+}
+button:hover { background: var(--surface); }
+@media (max-width: 560px) { .wrap { padding: 2.5rem 1.25rem 4rem; } }
