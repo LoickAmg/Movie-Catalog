@@ -26,10 +26,17 @@ jobs:
 
       - name: Refresh local catalogue
         env:
-          TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
-          TMDB_MOVIE_PAGES: "20"
-          TMDB_TV_PAGES: "20"
+          # Films récents : jeux de données publics IMDb (aucune clé, aucun
+          # compte) — voir scripts/refresh_catalog.py. Aucun secret requis
+          # pour cette étape par défaut.
+          IMDB_SINCE_YEAR: "2024"
           TVMAZE_PAGES: "8"
+          # TMDB reste optionnel : ne sert que si le secret ci-dessous est
+          # configuré (Settings > Secrets and variables > Actions). Absent,
+          # il est simplement ignoré — IMDb + TVmaze suffisent seuls.
+          TMDB_BEARER_TOKEN: ${{ secrets.TMDB_BEARER_TOKEN }}
+          TMDB_MOVIE_PAGES: "0"
+          TMDB_TV_PAGES: "0"
         run: python scripts/refresh_catalog.py
 
       - name: Validate generated catalogue

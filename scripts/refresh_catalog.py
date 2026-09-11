@@ -1,19 +1,33 @@
 #!/usr/bin/env python3
 """Build the browser catalogue from public media sources.
 
-TMDB is used for current films and series when TMDB_BEARER_TOKEN is present.
-TVmaze is used for a broad series index and does not require a key. The output
-is a single catalog.json consumed by the static site; no credential is ever
-written to public/.
+Films récents : les jeux de données non commerciaux d'IMDb
+(https://datasets.imdbws.com/), sans clé ni compte — deux fichiers TSV
+compressés, mis à jour chaque jour par IMDb, téléchargés puis filtrés en
+local. C'est la source par défaut, aucune configuration requise.
+
+Séries : TVmaze, une API publique qui ne demande pas de clé.
+
+TMDB reste utilisable en complément (films et séries plus riches : affiches,
+synopsis) si TMDB_BEARER_TOKEN est présent, mais n'est plus requis pour un
+catalogue complet — IMDb + TVmaze suffisent seuls.
+
+L'ancien instantané Wikipedia (movies.json, figé à 2023) reste conservé comme
+filet de secours hors-ligne. Le tout est fusionné dans un seul catalog.json
+consommé par le site statique ; aucun identifiant n'est jamais écrit dans
+public/.
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
+import gzip
 import html
 import json
 import os
 import re
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -26,6 +40,24 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_DATA = ROOT / "public" / "data"
 LEGACY_PATH = PUBLIC_DATA / "movies.json"
 OUTPUT_PATH = PUBLIC_DATA / "catalog.json"
+
+IMDB_DATASETS_BASE = "https://datasets.imdbws.com"
+IMDB_CACHE_DIR = ROOT / "data" / "imdb-cache"
+
+# IMDb utilise ses propres étiquettes de genre (anglaises, stables depuis des
+# années) ; on les fait correspondre au vocabulaire français déjà utilisé par
+# TMDB_MOVIE_GENRES pour ne pas fragmenter le filtre genre du site avec deux
+# langues différentes pour le même concept.
+IMDB_GENRE_MAP = {
+    "Action": "Action", "Adventure": "Aventure", "Animation": "Animation",
+    "Biography": "Biographie", "Comedy": "Comédie", "Crime": "Crime",
+    "Documentary": "Documentaire", "Drama": "Drame", "Family": "Famille",
+    "Fantasy": "Fantastique", "Film-Noir": "Film noir", "History": "Histoire",
+    "Horror": "Horreur", "Music": "Musique", "Musical": "Comédie musicale",
+    "Mystery": "Mystère", "Romance": "Romance", "Sci-Fi": "Science-fiction",
+    "Short": "Court métrage", "Sport": "Sport", "Thriller": "Thriller",
+    "War": "Guerre", "Western": "Western",
+}
 
 TMDB_MOVIE_GENRES = {
     28: "Action", 12: "Aventure", 16: "Animation", 35: "Comédie", 80: "Crime",
@@ -157,6 +189,118 @@ def fetch_tvmaze(pages: int) -> list[dict[str, Any]]:
     return results
 
 
+def _ensure_imdb_dataset(name: str, cache_dir: Path, offline: bool) -> Path | None:
+    """Retourne le chemin local du fichier `{name}.tsv.gz` d'IMDb.
+
+    Télécharge le fichier dans `cache_dir` (sans aucune clé — un simple
+    fichier public, régénéré chaque jour par IMDb), sauf si `offline` est
+    vrai et qu'une copie locale existe déjà. Ne lève jamais d'exception :
+    une erreur réseau ou une copie locale absente renvoie `None`, pour que
+    l'absence d'IMDb (pas d'accès réseau à ce moment précis) n'empêche
+    jamais le reste du catalogue (legacy + TVmaze [+ TMDB]) de se
+    construire.
+    """
+    destination = cache_dir / f"{name}.tsv.gz"
+    if offline:
+        return destination if destination.exists() else None
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    url = f"{IMDB_DATASETS_BASE}/{name}.tsv.gz"
+    request = Request(url, headers={"User-Agent": "movie-catalog-refresh/1.0"})
+    temporary = destination.with_suffix(".tsv.gz.tmp")
+    try:
+        with urlopen(request, timeout=120) as response, open(temporary, "wb") as handle:
+            shutil.copyfileobj(response, handle)
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"IMDb : téléchargement de {name}.tsv.gz impossible ({error}) — ignoré.", file=sys.stderr)
+        temporary.unlink(missing_ok=True)
+        return destination if destination.exists() else None
+    temporary.replace(destination)
+    return destination
+
+
+def _iter_imdb_tsv(path: Path):
+    """Générateur streamé sur un `.tsv.gz` d'IMDb : jamais tout en mémoire.
+
+    `title.basics.tsv.gz` décompressé pèse plus d'un gigaoctet (tous types
+    de titres confondus : films, séries, épisodes, courts-métrages...) —
+    on le lit ligne à ligne via `gzip` plutôt que de charger le fichier
+    entier, et on ne garde en mémoire que les quelques milliers de films
+    qui passent le filtre d'année.
+    """
+    with gzip.open(path, mode="rt", encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        header = next(reader)
+        index = {name: i for i, name in enumerate(header)}
+        for row in reader:
+            if len(row) != len(header):
+                continue  # ligne tronquée/corrompue : ignorée plutôt que de planter tout le traitement
+            yield index, row
+
+
+def fetch_imdb(since_year: int, cache_dir: Path = IMDB_CACHE_DIR, offline: bool = False) -> list[dict[str, Any]]:
+    """Films IMDb depuis `since_year`, sans clé ni compte.
+
+    Deux fichiers publics d'IMDb (`title.basics`, `title.ratings`), chacun un
+    simple `.tsv.gz` régénéré chaque jour — aucune authentification, aucun
+    quota de requêtes, contrairement à une API classique. Le catalogue
+    contient déjà les films jusqu'à 2023 (instantané Wikipedia figé) ; cette
+    fonction comble ce qui manque depuis, sans dupliquer ce qui existe déjà.
+    """
+    basics_path = _ensure_imdb_dataset("title.basics", cache_dir, offline)
+    if basics_path is None:
+        return []
+
+    kept: dict[str, dict[str, Any]] = {}
+    for index, row in _iter_imdb_tsv(basics_path):
+        if row[index["titleType"]] != "movie":
+            continue
+        if row[index["isAdult"]] == "1":
+            continue
+        start_year = row[index["startYear"]]
+        if start_year == r"\N" or not start_year.isdigit():
+            continue
+        if int(start_year) < since_year:
+            continue
+        tconst = row[index["tconst"]]
+        raw_genres = row[index["genres"]]
+        genres = [] if raw_genres == r"\N" else [
+            IMDB_GENRE_MAP[g] for g in raw_genres.split(",") if g in IMDB_GENRE_MAP
+        ]
+        kept[tconst] = {
+            "id": 5_000_000_000 + int(tconst[2:]),
+            "media_type": "movie",
+            "title": row[index["primaryTitle"]],
+            "original_title": row[index["originalTitle"]],
+            "year": int(start_year),
+            "genres": genres,
+            "overview": "",  # pas de synopsis dans le jeu de données non commercial
+            "rating": None,
+            "votes": 0,
+            "thumbnail": None,  # pas d'affiche dans ce jeu de données ; le site bascule déjà sur une vignette de repli
+            "homepage": f"https://www.imdb.com/title/{tconst}/",
+            "source": "IMDb",
+        }
+
+    if not kept:
+        return list(kept.values())
+
+    ratings_path = _ensure_imdb_dataset("title.ratings", cache_dir, offline)
+    if ratings_path is not None:
+        for index, row in _iter_imdb_tsv(ratings_path):
+            tconst = row[index["tconst"]]
+            item = kept.get(tconst)
+            if item is None:
+                continue
+            try:
+                item["rating"] = round(float(row[index["averageRating"]]), 1)
+                item["votes"] = int(row[index["numVotes"]])
+            except ValueError:
+                pass
+
+    return list(kept.values())
+
+
 def deduplicate(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     seen: set[tuple[Any, str]] = set()
     output: list[dict[str, Any]] = []
@@ -172,23 +316,29 @@ def deduplicate(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--movie-pages", type=int, default=int(os.getenv("TMDB_MOVIE_PAGES", "20")))
-    parser.add_argument("--tv-pages", type=int, default=int(os.getenv("TMDB_TV_PAGES", "20")))
+    parser.add_argument("--movie-pages", type=int, default=int(os.getenv("TMDB_MOVIE_PAGES", "0")),
+                         help="Pages TMDB pour les films (0 = désactivé ; nécessite TMDB_BEARER_TOKEN)")
+    parser.add_argument("--tv-pages", type=int, default=int(os.getenv("TMDB_TV_PAGES", "0")),
+                         help="Pages TMDB pour les séries (0 = désactivé ; nécessite TMDB_BEARER_TOKEN)")
     parser.add_argument("--tvmaze-pages", type=int, default=int(os.getenv("TVMAZE_PAGES", "8")))
     parser.add_argument("--language", default=os.getenv("TMDB_LANGUAGE", "fr-FR"))
+    parser.add_argument("--imdb-since-year", type=int, default=int(os.getenv("IMDB_SINCE_YEAR", "2024")),
+                         help="Films IMDb à partir de cette année (défaut : 2024, la limite du jeu de données Wikipedia figé)")
+    parser.add_argument("--no-imdb", action="store_true", help="Ne pas interroger les jeux de données IMDb")
+    parser.add_argument("--imdb-offline", action="store_true",
+                         help="Réutiliser les fichiers IMDb déjà en cache (data/imdb-cache/) sans retélécharger")
     parser.add_argument("--without-legacy", action="store_true", help="Do not retain the original static movie dataset")
-    parser.add_argument("--allow-no-tmdb", action="store_true", help="Use TVmaze and legacy data if the TMDB token is absent")
+    parser.add_argument("--allow-no-tmdb", action="store_true", help="Conservé pour compatibilité : n'a plus d'effet, TMDB n'est déjà plus requis")
     args = parser.parse_args()
 
     token = os.getenv("TMDB_BEARER_TOKEN")
-    if not token and not args.allow_no_tmdb:
-        print("TMDB_BEARER_TOKEN is required for a complete refresh. Use --allow-no-tmdb only for a local fallback.", file=sys.stderr)
-        return 2
 
     items: list[dict[str, Any]] = [] if args.without_legacy else load_legacy()
     if token:
         items.extend(fetch_tmdb(token, "movie", args.movie_pages, args.language))
         items.extend(fetch_tmdb(token, "tv", args.tv_pages, args.language))
+    if not args.no_imdb:
+        items.extend(fetch_imdb(args.imdb_since_year, offline=args.imdb_offline))
     items.extend(fetch_tvmaze(args.tvmaze_pages))
     items = deduplicate(items)
     items.sort(key=lambda item: (item.get("year") or 0, item.get("title", "").lower()), reverse=True)

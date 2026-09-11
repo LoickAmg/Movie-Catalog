@@ -23,14 +23,22 @@ sans backend, **sans clé API**, prête à déployer sur GitHub Pages.
 
 ## Source des données
 
-Pas de clé API ni de service tiers à configurer : le catalogue
-(`public/data/movies.json`) est un instantané statique — titres, années,
-genres, casting, synopsis et affiches — construit à partir du jeu de données
-public [prust/wikipedia-movie-data](https://github.com/prust/wikipedia-movie-data)
-(MIT), lui-même issu de Wikipédia (CC BY-SA pour les textes). Les affiches
-sont hébergées sur `upload.wikimedia.org` ; si une image ne charge pas (lien
-mort, connexion coupée...), l'interface bascule automatiquement sur une
-vignette colorée + emoji de genre au lieu de casser l'affichage.
+Pas de clé API ni de service tiers à configurer. Le catalogue historique
+(`public/data/movies.json`, ~4000 films 2008–2023) reste un instantané
+statique construit à partir du jeu de données public
+[prust/wikipedia-movie-data](https://github.com/prust/wikipedia-movie-data)
+(MIT — **projet désormais archivé**, plus aucune mise à jour possible depuis
+cette source), lui-même issu de Wikipédia (CC BY-SA pour les textes). Les
+affiches sont hébergées sur `upload.wikimedia.org` ; si une image ne charge
+pas (lien mort, connexion coupée...), l'interface bascule automatiquement sur
+une vignette colorée + emoji de genre au lieu de casser l'affichage.
+
+Le catalogue étendu (`public/data/catalog.json`, voir section suivante) se
+tient à jour sans aucune clé API : les films récents (2024 →) viennent des
+[jeux de données non-commerciaux d'IMDb](https://developer.imdb.com/non-commercial-datasets/)
+(fichiers TSV publics, téléchargement anonyme, mis à jour quotidiennement par
+IMDb) et les séries viennent de [TVmaze](https://www.tvmaze.com/api) (API
+publique sans clé). TMDB reste utilisable mais est entièrement optionnel.
 
 ## Structure du projet
 
@@ -107,15 +115,47 @@ fois sur le repo :
 
 Le site sert maintenant `public/data/catalog.json`, un format commun aux médias `movie` et `tv`. Les séries peuvent contenir une affiche, un synopsis, une note, une date de première diffusion, un diffuseur et des informations de saisons ou d’épisodes. Le catalogue historique de films reste un filet local pour que le site conserve un mode de démonstration sans réseau.
 
-Le script `scripts/refresh_catalog.py` peut construire un catalogue étendu. TVmaze fournit un index large de séries sans clé ; TMDB fournit les films et séries populaires les plus récents lorsque `TMDB_BEARER_TOKEN` est présent. La clé n’est jamais placée dans `public/` ni exposée au navigateur.
+Le script `scripts/refresh_catalog.py` construit le catalogue étendu, **sans
+aucune clé API par défaut** :
 
-Pour générer localement un catalogue avec le catalogue historique et une première sélection de séries :
+- **Films récents (2024 → aujourd'hui)** : téléchargés depuis les jeux de
+  données non-commerciaux d'IMDb (`title.basics.tsv.gz` +
+  `title.ratings.tsv.gz`, quelques centaines de Mo compressés). Le script les
+  télécharge automatiquement dans `data/imdb-cache/` (dossier ignoré par git,
+  voir `.gitignore`) puis ne garde que les films dont l'année de sortie est
+  `>= --imdb-since-year` (2024 par défaut). Aucune inscription, aucune clé,
+  aucun quota.
+- **Séries** : TVmaze fournit un index large de séries sans clé.
+- **TMDB (optionnel)** : n'est utilisé que si `TMDB_BEARER_TOKEN` est présent
+  *et* que `--movie-pages`/`--tv-pages` sont > 0 (les deux valent `0` par
+  défaut désormais). La clé n'est jamais placée dans `public/` ni exposée au
+  navigateur.
+
+Options utiles de `scripts/refresh_catalog.py` :
+
+| Option | Effet |
+|--------|-------|
+| `--imdb-since-year ANNÉE` | Ne garder que les films IMDb sortis à partir de cette année (défaut : 2024) |
+| `--no-imdb` | Ne pas interroger IMDb du tout |
+| `--imdb-offline` | Réutiliser les fichiers déjà présents dans `data/imdb-cache/` sans retélécharger (utile hors-ligne ou pour itérer rapidement) |
+| `--tvmaze-pages N` | Nombre de pages TVmaze à parcourir (défaut : 8) |
+| `--without-legacy` | Ne pas conserver l'ancien instantané Wikipedia figé dans le résultat |
+
+Pour générer localement un catalogue complet (historique + IMDb + TVmaze,
+sans aucune clé) :
 
 ```powershell
-py -3 scripts\refresh_catalog.py --movie-pages 0 --tv-pages 0 --tvmaze-pages 8 --allow-no-tmdb
+py -3 scripts\refresh_catalog.py
 ```
 
-Pour un catalogue régulièrement actualisé, le workflow `.github/workflows/refresh-catalog.yml` utilise le secret GitHub `TMDB_BEARER_TOKEN`, puis commit uniquement `public/data/catalog.json` quand le contenu a changé. Il suffit de créer ce secret dans `Settings > Secrets and variables > Actions`, de pousser le workflow et de lancer une première synchronisation avec `workflow_dispatch`. Le workflow de publication Pages se relance alors sur le commit généré.
+Pour un catalogue régulièrement actualisé, le workflow
+`.github/workflows/refresh-catalog.yml` tourne chaque nuit sans qu'aucun
+secret GitHub ne soit nécessaire : IMDb et TVmaze suffisent seuls. Il commit
+uniquement `public/data/catalog.json` quand le contenu a changé. Il suffit de
+pousser le workflow et de lancer une première synchronisation avec
+`workflow_dispatch` (le secret `TMDB_BEARER_TOKEN` reste disponible en option
+si tu veux quand même enrichir avec TMDB). Le workflow de publication Pages
+se relance alors sur le commit généré.
 
 L’interface propose désormais une recherche dans les titres, le synopsis, le casting et les diffuseurs, un filtre Films / Séries, des filtres par genre et année, un tri par récence, note ou titre, des fiches enrichies et des recommandations locales basées sur les genres des titres de votre liste. Les recommandations sont explicables et privées dans le navigateur ; elles ne prétendent pas remplacer un profil serveur ou un moteur éditorial.
 
