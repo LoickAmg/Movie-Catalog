@@ -21,6 +21,7 @@ public/.
 from __future__ import annotations
 
 import argparse
+from datetime import UTC, datetime
 import csv
 import gzip
 import html
@@ -238,7 +239,12 @@ def _iter_imdb_tsv(path: Path):
             yield index, row
 
 
-def fetch_imdb(since_year: int, cache_dir: Path = IMDB_CACHE_DIR, offline: bool = False) -> list[dict[str, Any]]:
+def fetch_imdb(
+    since_year: int,
+    cache_dir: Path = IMDB_CACHE_DIR,
+    offline: bool = False,
+    min_votes: int = 1000,
+) -> list[dict[str, Any]]:
     """Films IMDb depuis `since_year`, sans clé ni compte.
 
     Deux fichiers publics d'IMDb (`title.basics`, `title.ratings`), chacun un
@@ -298,7 +304,16 @@ def fetch_imdb(since_year: int, cache_dir: Path = IMDB_CACHE_DIR, offline: bool 
             except ValueError:
                 pass
 
-    return list(kept.values())
+    # Le jeu de données liste TOUS les films (58 000 depuis 2024, dont des projets
+    # annoncés, des courts inconnus, des films sans aucune note) : le site les
+    # chargerait en entier dans le navigateur. On ne garde que les films déjà sortis
+    # et assez notés pour qu'un visiteur ait une chance de les connaître.
+    this_year = datetime.now(UTC).year
+    return [
+        item
+        for item in kept.values()
+        if item["votes"] >= min_votes and item["year"] <= this_year
+    ]
 
 
 def deduplicate(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -324,6 +339,8 @@ def main() -> int:
     parser.add_argument("--language", default=os.getenv("TMDB_LANGUAGE", "fr-FR"))
     parser.add_argument("--imdb-since-year", type=int, default=int(os.getenv("IMDB_SINCE_YEAR", "2024")),
                          help="Films IMDb à partir de cette année (défaut : 2024, la limite du jeu de données Wikipedia figé)")
+    parser.add_argument("--imdb-min-votes", type=int, default=int(os.getenv("IMDB_MIN_VOTES", "1000")),
+                         help="Films IMDb : nombre minimal de votes pour figurer au catalogue (défaut : 1000)")
     parser.add_argument("--no-imdb", action="store_true", help="Ne pas interroger les jeux de données IMDb")
     parser.add_argument("--imdb-offline", action="store_true",
                          help="Réutiliser les fichiers IMDb déjà en cache (data/imdb-cache/) sans retélécharger")
@@ -338,7 +355,7 @@ def main() -> int:
         items.extend(fetch_tmdb(token, "movie", args.movie_pages, args.language))
         items.extend(fetch_tmdb(token, "tv", args.tv_pages, args.language))
     if not args.no_imdb:
-        items.extend(fetch_imdb(args.imdb_since_year, offline=args.imdb_offline))
+        items.extend(fetch_imdb(args.imdb_since_year, offline=args.imdb_offline, min_votes=args.imdb_min_votes))
     items.extend(fetch_tvmaze(args.tvmaze_pages))
     items = deduplicate(items)
     items.sort(key=lambda item: (item.get("year") or 0, item.get("title", "").lower()), reverse=True)

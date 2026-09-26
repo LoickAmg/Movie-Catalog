@@ -136,6 +136,7 @@ Options utiles de `scripts/refresh_catalog.py` :
 | Option | Effet |
 |--------|-------|
 | `--imdb-since-year ANNÉE` | Ne garder que les films IMDb sortis à partir de cette année (défaut : 2024) |
+| `--imdb-min-votes N` | Films IMDb : votes minimum pour figurer au catalogue (défaut : 1000, soit environ 3 600 films sortis depuis 2024 ; sans ce filtre, 58 000 titres dont des projets annoncés et des courts inconnus) |
 | `--no-imdb` | Ne pas interroger IMDb du tout |
 | `--imdb-offline` | Réutiliser les fichiers déjà présents dans `data/imdb-cache/` sans retélécharger (utile hors-ligne ou pour itérer rapidement) |
 | `--tvmaze-pages N` | Nombre de pages TVmaze à parcourir (défaut : 8) |
