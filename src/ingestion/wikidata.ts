@@ -58,7 +58,11 @@ const CLASSES_EXCLUES = new Set(["Q100269041", "Q3464665", "Q21198342", "Q149465
 
 const MINUTES_PAR_UNITE: Record<string, number> = { Q7727: 1, Q25235: 60, Q11574: 1 / 60 };
 
-const LANGUES_LIBELLES = ["fr", "en", "ja", "zh", "ko"];
+/**
+ * `mul` (multilingue) : Wikidata range sous ce code le nom commun à toutes les
+ * langues en alphabet latin (« Forrest Gump »), au lieu de le répéter en `fr` et `en`.
+ */
+const LANGUES_LIBELLES = ["fr", "mul", "en", "ja", "zh", "ko"];
 
 /** Un triplet (élément, propriété, valeur) renvoyé par la requête de détail. */
 export interface TripletWikidata {
@@ -71,6 +75,7 @@ export interface TripletWikidata {
 /** Libellés et code pays des éléments référencés (genres, pays, personnes, studios). */
 export interface Reference {
   fr?: string;
+  mul?: string;
   en?: string;
   iso?: string;
 }
@@ -155,7 +160,7 @@ export async function referencer(http: ClientHttp, qids: readonly string[]): Pro
   const reponse = await sparql(
     http,
     `SELECT ?x ?p ?v ?lang WHERE { VALUES ?x { ${qids.map((q) => `wd:${q}`).join(" ")} }
-      { ?x rdfs:label ?v. FILTER(LANG(?v) IN ("fr", "en")) BIND("label" AS ?p) BIND(LANG(?v) AS ?lang) }
+      { ?x rdfs:label ?v. FILTER(LANG(?v) IN ("fr", "mul", "en")) BIND("label" AS ?p) BIND(LANG(?v) AS ?lang) }
       UNION { ?x wdt:P297 ?v. BIND("P297" AS ?p) } }`,
   );
   const references = new Map<string, Reference>();
@@ -167,6 +172,7 @@ export async function referencer(http: ClientHttp, qids: readonly string[]): Pro
     const ref = references.get(qid) ?? {};
     if (ligne.p?.value === "P297") ref.iso = v;
     else if (ligne.lang?.value === "fr") ref.fr = v;
+    else if (ligne.lang?.value === "mul") ref.mul = v;
     else if (ligne.lang?.value === "en") ref.en = v;
     references.set(qid, ref);
   }
@@ -208,9 +214,11 @@ export function normaliserWikidata(
   if (!format) return null;
 
   const genresEn = simples("P136").map((g) => references.get(g)?.en ?? "");
+  // « live-action/animated film » (Avatar, Roger Rabbit) : technique mixte, pas animation.
+  const mixte = genresEn.some((g) => /live[- ]action\s*(\/|and|-)\s*anima/i.test(g));
   const animation =
-    classes.some((c) => CLASSES_ANIMATION.has(c)) || genresEn.some((g) => /\banimat|\banime\b/i.test(g));
-  const technique: Technique = animation ? "animation" : "prises_de_vue_reelles";
+    !mixte && (classes.some((c) => CLASSES_ANIMATION.has(c)) || genresEn.some((g) => /\banimat|\banime\b/i.test(g)));
+  const technique: Technique = mixte ? "mixte" : animation ? "animation" : "prises_de_vue_reelles";
 
   let origines = simples("P495")
     .map((p) => references.get(p)?.iso)
@@ -226,9 +234,8 @@ export function normaliserWikidata(
     vus.add(cle);
     titres.push({ valeur: valeur.trim(), langue, type, source: "wikidata" });
   };
-  for (const t of valeurs("label")) {
-    ajouter(t.v, t.lang ?? null, t.lang === "fr" || t.lang === "en" ? "officiel" : "original");
-  }
+  // Les libellés sont des noms d'usage dans chaque langue ; le titre original vient de P1476.
+  for (const t of valeurs("label")) ajouter(t.v, t.lang ?? null, "officiel");
   for (const t of valeurs("P1476")) ajouter(t.v, t.lang ?? null, "original");
   if (titres.length === 0) return null;
 
@@ -246,7 +253,8 @@ export function normaliserWikidata(
   const credits: Credit[] = [];
   const ajouterCredits = (p: string, role: Credit["role"]) => {
     for (const q of simples(p)) {
-      const nom = references.get(q)?.fr ?? references.get(q)?.en;
+      const ref = references.get(q);
+      const nom = ref?.fr ?? ref?.mul ?? ref?.en;
       if (nom) credits.push({ role, nom, source: "wikidata" });
     }
   };

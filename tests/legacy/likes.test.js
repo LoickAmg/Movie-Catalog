@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLikesStore, createMemoryStorage } from "../public/js/likes.js";
+import { createLikesStore, createMemoryStorage } from "../../legacy/public/js/likes.js";
 
 describe("createLikesStore", () => {
   it("starts with no likes", () => {

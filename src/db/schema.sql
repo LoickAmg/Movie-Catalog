@@ -13,10 +13,13 @@ CREATE TABLE IF NOT EXISTS oeuvre (
   annee           integer,
   duree_min       integer,
   popularite      jsonb NOT NULL DEFAULT '{}',
+  score           real NOT NULL DEFAULT 0,
   provenance      jsonb NOT NULL DEFAULT '{}',
   maj_le          timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS oeuvre_rubrique ON oeuvre (rubrique);
+-- Base créée avant l'ajout du score.
+ALTER TABLE oeuvre ADD COLUMN IF NOT EXISTS score real NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS oeuvre_rubrique_score ON oeuvre (rubrique, score DESC);
 
 CREATE TABLE IF NOT EXISTS titre (
   oeuvre_id  text NOT NULL REFERENCES oeuvre (id) ON DELETE CASCADE,

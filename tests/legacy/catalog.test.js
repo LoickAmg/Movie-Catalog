@@ -11,7 +11,7 @@ import {
   searchMovies,
   sortCatalog,
   validateMovies,
-} from "../public/js/catalog.js";
+} from "../../legacy/public/js/catalog.js";
 
 const MOVIES = [
   { id: 1, title: "The Matrix", genres: ["Action", "Science Fiction"], cast: ["Keanu Reeves"] },

@@ -1,4 +1,5 @@
 import { GENRES } from "../domain/genres.ts";
+import { scorePopularite } from "../domain/popularite.ts";
 import { normaliserTitre } from "../domain/texte.ts";
 import { DEMOGRAPHIES, type Oeuvre, type Relation } from "../domain/types.ts";
 import type { Db } from "./client.ts";
@@ -68,6 +69,7 @@ export async function remplacerCatalogue(
         annee: "integer",
         duree_min: "integer",
         popularite: "jsonb",
+        score: "real",
         provenance: "jsonb",
       },
       oeuvres.map((o) => ({
@@ -83,6 +85,7 @@ export async function remplacerCatalogue(
         annee: o.annee,
         duree_min: o.duree_min,
         popularite: o.popularite,
+        score: scorePopularite(o.popularite),
         provenance: o.provenance,
       })),
     );

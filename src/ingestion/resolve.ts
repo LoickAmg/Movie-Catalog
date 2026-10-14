@@ -311,8 +311,11 @@ export function fusionner(membres: readonly FicheSource[], heuristiques: Readonl
   }
   const principal =
     titres.find((t) => t.langue === "fr" && t.type === "officiel") ??
+    titres.find((t) => t.langue === "mul" && t.type === "officiel") ??
     titres.find((t) => t.source === "anilist" && t.type === "officiel") ??
     titres.find((t) => t.type === "romaji") ??
+    titres.find((t) => t.langue === "en" && t.type === "officiel") ??
+    titres.find((t) => t.type === "original") ??
     titres.find((t) => t.type === "officiel") ??
     titres[0]!;
   provenance.titre_principal = {

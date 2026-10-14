@@ -139,11 +139,29 @@ describe("normaliserWikidata", () => {
     expect(f.titres.map((t) => [t.valeur, t.type])).toEqual([
       ["Le Voyage de Chihiro", "officiel"],
       ["Spirited Away", "officiel"],
-      ["千と千尋の神隠し", "original"],
+      ["千と千尋の神隠し", "officiel"],
     ]);
     expect(f.identifiants.map((i) => `${i.espace}:${i.valeur}`)).toEqual(["wikidata:Q1", "imdb:tt0245429", "anilist:199"]);
     expect(f.credits).toEqual([{ role: "realisation", nom: "Hayao Miyazaki", source: "wikidata" }]);
     expect(f.relations).toEqual([{ type: "suite", cible: "wikidata:Q2", regrouper: false }]);
+  });
+
+  it("lit les libellés multilingues (mul) et range les hybrides en technique mixte", () => {
+    const avatar: TripletWikidata[] = [
+      { item: "Q3", p: "label", v: "Avatar", lang: "mul" },
+      { item: "Q3", p: "label", v: "アバター", lang: "ja" },
+      { item: "Q3", p: "P31", v: "Q11424" },
+      { item: "Q3", p: "P136", v: "Q25110269" },
+      { item: "Q3", p: "P57", v: "Q42" },
+    ];
+    const refs = new Map<string, Reference>([
+      ["Q25110269", { en: "live-action/animated film" }],
+      ["Q42", { mul: "James Cameron" }],
+    ]);
+    const f = normaliserWikidata("Q3", avatar, refs, 100, RECUPERE_LE)!;
+    expect(f.technique).toBe("mixte");
+    expect(f.titres[0]).toMatchObject({ valeur: "Avatar", langue: "mul", type: "officiel" });
+    expect(f.credits).toEqual([{ role: "realisation", nom: "James Cameron", source: "wikidata" }]);
   });
 
   it("déduit le Japon pour une classe « anime » sans pays d'origine", () => {

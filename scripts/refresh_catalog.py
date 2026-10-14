@@ -38,7 +38,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_DATA = ROOT / "public" / "data"
+PUBLIC_DATA = ROOT / "legacy" / "public" / "data"
 LEGACY_PATH = PUBLIC_DATA / "movies.json"
 OUTPUT_PATH = PUBLIC_DATA / "catalog.json"
 

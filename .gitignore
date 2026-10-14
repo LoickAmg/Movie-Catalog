@@ -4,3 +4,6 @@ data/imdb-cache/
 data/raw/
 data/db/
 data/rapports/
+.next/
+next-env.d.ts
+*.tsbuildinfo

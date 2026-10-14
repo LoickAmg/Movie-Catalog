@@ -35,14 +35,40 @@ npm run ingest -- --sources anilist --anilist-max 200 --oeuvres-min 10
 - Si un seuil de qualité n'est pas respecté (invariants, doublons, couverture,
   chute du nombre d'œuvres), **rien n'est écrit** et la commande échoue.
 
+## Application web (lot 2)
+
+Next.js + TypeScript. Après un premier `npm run ingest` :
+
+```bash
+npm run dev
+```
+
+- Accueil, quatre rubriques filtrables (genre, origine, décennie, tri), recherche
+  dans tous les titres (français, original, romaji, synonymes), une page par œuvre
+  avec ses saisons, ses œuvres liées et ses sources.
+- **Fiches Savoir** dans `contenu/savoir/*.md` : une étiquette « Seinen » ou
+  « Donghua » ouvre sa mini-carte. Le format est vérifié par les tests
+  (longueurs, sources, fiches liées, concepts connus). Une fiche marquée
+  `statut: brouillon` est signalée comme non relue.
+- **Contrat de thème** : toutes les couleurs, polices et textures passent par les
+  variables de `src/app/globals.css`. Une page d'œuvre redéfinit `--accent` avec
+  la couleur fournie par la source, corrigée pour rester lisible.
+- La base PGlite ne s'ouvre que dans un seul processus : arrêtez `npm run dev`
+  avant de relancer `npm run ingest`.
+
 Organisation :
 
 | Dossier | Rôle |
 |---|---|
-| `src/domain/` | Modèle, classification (rubriques), genres, invariants — sans aucune dépendance technique |
+| `src/domain/` | Modèle, classification (rubriques), genres, invariants, popularité, couleurs — sans aucune dépendance technique |
 | `src/ingestion/` | Un adaptateur par source, rapprochement des fiches, rapport de qualité |
 | `src/db/` | Schéma PostgreSQL et enregistrement du catalogue |
+| `src/catalogue/` | Lecture du catalogue pour l'interface (recherche, rubriques, fiche d'œuvre) |
+| `src/savoir/` | Chargement et validation des fiches Savoir |
+| `src/app/`, `src/web/` | Pages Next.js et composants |
+| `contenu/savoir/` | Les fiches Savoir, en Markdown |
 | `scripts/ingest.ts` | Commande d'import |
+| `legacy/` | L'ancien site statique, toujours déployé sur GitHub Pages pendant la migration |
 
 ## Fonctionnalités
 

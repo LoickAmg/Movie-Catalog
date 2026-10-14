@@ -26,10 +26,10 @@ export interface MediaAnilist {
   description: string | null;
 }
 
-const REQUETE = `query ($page: Int, $parPage: Int) {
+const REQUETE = `query ($page: Int, $parPage: Int, $pays: CountryCode) {
   Page(page: $page, perPage: $parPage) {
     pageInfo { hasNextPage }
-    media(type: ANIME, isAdult: false, format_not: MUSIC, sort: POPULARITY_DESC) {
+    media(type: ANIME, isAdult: false, format_not: MUSIC, sort: POPULARITY_DESC, countryOfOrigin: $pays) {
       id idMal title { romaji english native } synonyms format episodes duration
       countryOfOrigin isAdult startDate { year month day } genres
       tags { name rank category isMediaSpoiler }
@@ -42,8 +42,11 @@ const REQUETE = `query ($page: Int, $parPage: Int) {
 
 const PAR_PAGE = 50;
 
-/** Les médias les plus populaires d'AniList, hors contenu adulte et clips musicaux. */
-export async function acquerirAnilist(http: ClientHttp, maximum: number): Promise<MediaAnilist[]> {
+/**
+ * Les médias les plus populaires d'AniList, hors contenu adulte et clips
+ * musicaux ; `pays` restreint à une origine (CN, KR…), sinon toutes.
+ */
+export async function acquerirAnilist(http: ClientHttp, maximum: number, pays: string | null = null): Promise<MediaAnilist[]> {
   const medias: MediaAnilist[] = [];
   for (let page = 1; medias.length < maximum; page++) {
     const reponse = await http.json<{
@@ -52,7 +55,7 @@ export async function acquerirAnilist(http: ClientHttp, maximum: number): Promis
     }>("https://graphql.anilist.co", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: REQUETE, variables: { page, parPage: PAR_PAGE } }),
+      body: JSON.stringify({ query: REQUETE, variables: { page, parPage: PAR_PAGE, ...(pays ? { pays } : {}) } }),
     });
     if (!reponse.data) throw new Error(`AniList : ${JSON.stringify(reponse.errors)}`);
     medias.push(...reponse.data.Page.media);

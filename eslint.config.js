@@ -2,7 +2,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["node_modules/**", "public/data/**"],
+    ignores: ["node_modules/**", "legacy/public/data/**", ".next/**", "next-env.d.ts"],
   },
   {
     files: ["**/*.js"],

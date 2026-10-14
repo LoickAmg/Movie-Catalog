@@ -4,15 +4,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "serve": "npx --yes serve public",
-    "ingest": "tsx scripts/ingest.ts"
+    "ingest": "tsx scripts/ingest.ts",
+    "serve:legacy": "npx --yes serve legacy/public"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
     "@types/node": "^24.13.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^10.8.1",
     "globals": "^17.11.0",
     "tsx": "^4.23.14",
@@ -21,5 +26,12 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "marked": "^18.0.14",
+    "next": "^16.3.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "yaml": "^2.9.1"
   }
 }

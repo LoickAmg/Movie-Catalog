@@ -37,7 +37,8 @@ const EXEMPLES_MAX = 50;
 
 function presence(oeuvre: Oeuvre): Record<ChampCouverture, boolean> {
   return {
-    titre_fr: oeuvre.titres.some((t) => t.langue === "fr"),
+    // `mul` : nom identique dans toutes les langues latines, donc utilisable en français.
+    titre_fr: oeuvre.titres.some((t) => t.langue === "fr" || t.langue === "mul"),
     annee: oeuvre.annee !== null,
     duree: oeuvre.duree_min !== null,
     origine: oeuvre.origines.length > 0,

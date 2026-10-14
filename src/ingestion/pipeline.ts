@@ -15,6 +15,11 @@ import {
 
 export interface OptionsAcquisition {
   anilistMax: number;
+  /**
+   * Import complémentaire par pays : le classement mondial étant dominé par le
+   * Japon, le donghua et l'aeni seraient presque absents sans lui.
+   */
+  anilistParPays: Record<string, number>;
   wikidataFilmsSitelinksMin: number;
   wikidataSeriesSitelinksMin: number;
   tvmazePoidsMin: number;
@@ -28,6 +33,11 @@ export async function fichesAnilist(http: ClientHttp, options: OptionsAcquisitio
   const recupere_le = new Date().toISOString();
   const medias = await acquerirAnilist(http, options.anilistMax);
   journal(`AniList : ${medias.length} médias reçus`);
+  for (const [pays, maximum] of Object.entries(options.anilistParPays)) {
+    const lot = await acquerirAnilist(http, maximum, pays);
+    journal(`AniList ${pays} : ${lot.length} médias reçus`);
+    medias.push(...lot);
+  }
   return medias.map((m) => normaliserAnilist(m, recupere_le)).filter((f): f is FicheSource => f !== null);
 }
 

@@ -27,6 +27,7 @@ const { values: args } = parseArgs({
   options: {
     sources: { type: "string", default: "anilist,wikidata,tvmaze" },
     "anilist-max": { type: "string", default: "3000" },
+    "anilist-pays": { type: "string", default: "CN:600,KR:200" },
     "wd-films-sitelinks": { type: "string", default: "20" },
     "wd-series-sitelinks": { type: "string", default: "15" },
     "tvmaze-poids": { type: "string", default: "95" },
@@ -42,6 +43,15 @@ const journal = (message: string) => console.log(`[${new Date().toISOString().sl
 
 const options: OptionsAcquisition = {
   anilistMax: Number(args["anilist-max"]),
+  anilistParPays: Object.fromEntries(
+    args["anilist-pays"]
+      .split(",")
+      .filter(Boolean)
+      .map((paire) => {
+        const [pays = "", maximum = "0"] = paire.split(":");
+        return [pays.trim().toUpperCase(), Number(maximum)];
+      }),
+  ),
   wikidataFilmsSitelinksMin: Number(args["wd-films-sitelinks"]),
   wikidataSeriesSitelinksMin: Number(args["wd-series-sitelinks"]),
   tvmazePoidsMin: Number(args["tvmaze-poids"]),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGenreProfile, buildPeopleProfile, recommend, recommendDetailed, scoreMovie, topProfileGenres } from "../public/js/recommend.js";
+import { buildGenreProfile, buildPeopleProfile, recommend, recommendDetailed, scoreMovie, topProfileGenres } from "../../legacy/public/js/recommend.js";
 
 const MOVIES = [
   { id: 1, title: "Liked Action 1", year: 2020, genres: ["Action", "Thriller"] },

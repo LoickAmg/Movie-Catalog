@@ -44,7 +44,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          path = Path("public/data/catalog.json")
+          path = Path("legacy/public/data/catalog.json")
           items = json.loads(path.read_text(encoding="utf-8"))
           assert len(items) >= 1000, f"Catalogue unexpectedly small: {len(items)}"
           assert any(item.get("media_type") == "movie" for item in items)
@@ -56,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/catalog.json
+          git add legacy/public/data/catalog.json
           if git diff --cached --quiet; then
             echo "Catalogue is already up to date"
           else

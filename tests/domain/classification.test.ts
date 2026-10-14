@@ -79,3 +79,13 @@ describe("normaliserTitre", () => {
     expect(slugifier("Slice of Life")).toBe("slice_of_life");
   });
 });
+
+describe("scorePopularite", () => {
+  it("ne laisse pas un poids TVmaze saturé dépasser une série connue de Wikipédia", async () => {
+    const { scorePopularite } = await import("../../src/domain/popularite.ts");
+    expect(scorePopularite({ tvmaze: 100 })).toBe(0.6);
+    expect(scorePopularite({ wikidata: 80, tvmaze: 100 })).toBeGreaterThan(0.8);
+    expect(scorePopularite({ anilist: 1_000_000 })).toBe(1);
+    expect(scorePopularite({})).toBe(0);
+  });
+});
