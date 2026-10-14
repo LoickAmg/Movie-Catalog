@@ -32,6 +32,7 @@ export default function Racine({ children }: { children: ReactNode }) {
                 </Link>
               ))}
               <Link href="/comprendre">Comprendre</Link>
+              <Link href="/ma-liste">Ma liste</Link>
             </nav>
             <form action="/recherche" role="search" className="recherche">
               <label htmlFor="recherche-entete" className="sr-only">

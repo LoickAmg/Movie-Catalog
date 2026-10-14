@@ -336,6 +336,7 @@ export function fusionner(membres: readonly FicheSource[], heuristiques: Readonl
     episodes: fiche.episodes,
     duree_min: fiche.duree_min,
     source: fiche.source,
+    identifiants: fiche.identifiants.map(cleDe),
   }));
 
   const formatChoisi = premier(fiches, (f) => f.format);

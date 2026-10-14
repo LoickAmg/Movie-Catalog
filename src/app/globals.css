@@ -714,3 +714,181 @@ button.etiquette::after {
     scroll-behavior: auto !important;
   }
 }
+
+/* Suivi personnel (lot 3) */
+
+.pile {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+.suivi h2 {
+  margin-bottom: 0.6em;
+}
+.choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.choix .bouton {
+  font-size: 0.9rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.bouton[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+  font-weight: 600;
+}
+.bouton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.progression {
+  display: grid;
+  gap: 10px;
+  margin-block: 8px 14px;
+}
+.progression select {
+  font: inherit;
+  width: 100%;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  padding: 8px;
+}
+.compteur {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compteur input {
+  width: 4.5em;
+  font: inherit;
+  text-align: center;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  padding: 6px;
+}
+.barre {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+.barre span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--motion);
+}
+.historique {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin-block: 8px;
+}
+.historique summary {
+  cursor: pointer;
+}
+.historique ol {
+  padding-left: 1.2em;
+  margin: 8px 0 0;
+}
+.lien-discret {
+  font: inherit;
+  font-size: 0.88rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.carte-visuel {
+  position: relative;
+  display: block;
+}
+.pastille {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 16px);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.6);
+}
+.pastille-abandonne,
+.pastille-pas_pour_moi {
+  background: var(--surface-raised);
+  color: var(--ink-muted);
+}
+.pastille-prevu {
+  background: var(--surface-raised);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+}
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block: 16px 24px;
+}
+.onglets .bouton {
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+.ligne-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-block: 12px;
+}
+.carte-progression {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.carte-progression .bouton {
+  padding: 2px 8px;
+  font-size: 0.8rem;
+}
+.etapes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.resultat-import {
+  margin-top: 12px;
+}
+.resultat-import ul {
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+.encadre input[type="text"],
+.encadre input[type="file"] {
+  font: inherit;
+  width: 100%;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  padding: 8px;
+  margin-block: 6px 10px;
+}

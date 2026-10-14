@@ -11,6 +11,7 @@ import { ficheDuConcept, type FicheSavoir } from "../../../savoir/fiches.ts";
 import { Carte } from "../../../web/composants/Cartes.tsx";
 import { Jaquette } from "../../../web/composants/Jaquette.tsx";
 import { Etiquette } from "../../../web/composants/Savoir.tsx";
+import { SuiviOeuvre } from "../../../web/suivi/SuiviOeuvre.tsx";
 import {
   BADGES_UI,
   DEMOGRAPHIES_UI,
@@ -176,6 +177,12 @@ export default async function PageOeuvre({ params }: { params: Promise<Params> }
           )}
         </div>
 
+        <div className="pile">
+        <SuiviOeuvre
+          oeuvre={oeuvre.id}
+          film={oeuvre.format === "film" || oeuvre.format === "court"}
+          parties={oeuvre.parties.map((p) => ({ cle: p.cle, titre: p.titre, episodes: p.episodes }))}
+        />
         <aside className="encadre" aria-labelledby="fiche-technique">
           <h2 id="fiche-technique">Fiche</h2>
           <dl>
@@ -227,6 +234,7 @@ export default async function PageOeuvre({ params }: { params: Promise<Params> }
             Sources de cette fiche : {sourcesUtilisees.map((s) => SOURCES_UI[s]?.nom ?? s).join(", ")}.
           </p>
         </aside>
+        </div>
       </div>
     </article>
   );

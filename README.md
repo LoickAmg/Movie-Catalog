@@ -53,6 +53,15 @@ npm run dev
 - **Contrat de thème** : toutes les couleurs, polices et textures passent par les
   variables de `src/app/globals.css`. Une page d'œuvre redéfinit `--accent` avec
   la couleur fournie par la source, corrigée pour rester lisible.
+- **Suivi personnel (lot 3)**, sans compte : statut (À voir, En cours, Vu,
+  En pause, Abandonné, Je revois), avis (J'aime, Pas pour moi) et progression
+  par épisode, saison par saison. Tout est un journal d'actions (`src/domain/suivi.ts`)
+  stocké dans le navigateur ; l'état en est déduit. Page « Ma liste » avec
+  historique, sauvegarde et restauration en JSON.
+- **Import** depuis AniList (pseudo d'une liste publique), MyAnimeList (export
+  XML) et Letterboxd (export CSV). Les fichiers sont lus dans le navigateur ;
+  seuls identifiants et titres partent au serveur (`/api/correspondances`).
+  Réimporter le même fichier ne crée pas de doublon.
 - La base PGlite ne s'ouvre que dans un seul processus : arrêtez `npm run dev`
   avant de relancer `npm run ingest`.
 

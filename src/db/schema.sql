@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS partie (
   source     text NOT NULL
 );
 CREATE INDEX IF NOT EXISTS partie_oeuvre ON partie (oeuvre_id);
+ALTER TABLE partie ADD COLUMN IF NOT EXISTS identifiants text[] NOT NULL DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS partie_identifiants ON partie USING gin (identifiants);
 
 CREATE TABLE IF NOT EXISTS identifiant_externe (
   espace     text NOT NULL,

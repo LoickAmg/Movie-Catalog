@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CarteOeuvre } from "../../catalogue/lecture.ts";
 import { badgeAnime } from "../../domain/classification.ts";
 import { BADGES_UI, nomPays, rubriqueUI } from "../libelles.ts";
+import { PastilleSuivi } from "../suivi/PastilleSuivi.tsx";
 import { Jaquette } from "./Jaquette.tsx";
 
 function meta(carte: CarteOeuvre): string {
@@ -13,7 +14,10 @@ function meta(carte: CarteOeuvre): string {
 export function Carte({ carte, prioritaire }: { carte: CarteOeuvre; prioritaire?: boolean }) {
   return (
     <Link href={`/oeuvre/${carte.id}`} className="carte">
-      <Jaquette titre={carte.titre} affiche={carte.affiche} rubrique={carte.rubrique} annee={carte.annee} prioritaire={prioritaire} />
+      <div className="carte-visuel">
+        <Jaquette titre={carte.titre} affiche={carte.affiche} rubrique={carte.rubrique} annee={carte.annee} prioritaire={prioritaire} />
+        <PastilleSuivi oeuvre={carte.id} film={carte.format === "film" || carte.format === "court"} />
+      </div>
       <span className="carte-titre">{carte.titre}</span>
       <span className="carte-meta">{meta(carte)}</span>
     </Link>

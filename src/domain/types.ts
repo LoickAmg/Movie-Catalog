@@ -96,6 +96,8 @@ export interface Partie {
   episodes: number | null;
   duree_min: number | null;
   source: SourceId;
+  /** Identifiants externes de cette partie précise (`anilist:20958`, `mal:25777`). */
+  identifiants: string[];
 }
 
 export interface Relation {

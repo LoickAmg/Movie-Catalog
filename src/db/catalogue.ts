@@ -109,6 +109,7 @@ export async function remplacerCatalogue(
         episodes: "integer",
         duree_min: "integer",
         source: "text",
+        identifiants: "text[]",
       },
       oeuvres.flatMap((o) => o.parties.map((p) => ({ ...p, oeuvre_id: o.id }))),
     );
