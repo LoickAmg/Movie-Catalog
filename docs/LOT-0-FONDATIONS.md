@@ -84,7 +84,7 @@ Volontairement réduit : uniquement ce dont la boucle « chercher → ouvrir →
 
 **Provenance** : chaque champ important garde `source` et `récupéré_le`. Une correction éditoriale a la source `editorial`.
 
-**Reporté** : épisodes individuels (lot 3), disponibilité plateforme (lot 6), personnes détaillées, franchises.
+**Reporté** : épisodes individuels (lot 3), offres et langues (lot 6, voir §7), personnes détaillées, franchises.
 
 ## 5. Fiches Savoir
 
@@ -174,7 +174,55 @@ Le site a un thème par défaut. Une page d'œuvre peut **redéfinir ces variabl
 - Mode clair et mode sombre pour le thème par défaut.
 - Budget de performance : la personnalisation ne doit pas ralentir l'affichage d'une page d'œuvre.
 
-## 7. Feuille de route
+## 7. Où regarder, et dans quelle langue
+
+L'utilisateur doit savoir **où** trouver une œuvre et **dans quelle langue** : « la VO n'est disponible que sur X et Y », « la VF est sur Z », « sous-titres français disponibles sur X uniquement », « aucune offre en VF en France ».
+
+### 7.1 La difficulté, sans détour
+
+| Information | Disponibilité des données |
+|---|---|
+| Sur quelle plateforme, dans quel pays, à quel prix (abonnement, location, achat, gratuit avec pub) | **Assez facile** : TMDB fournit les plateformes par pays (données JustWatch, mention obligatoire) *(à vérifier)* |
+| Quelles **pistes audio** (VO, VF…) et quels **sous-titres** sur chaque plateforme | **Difficile** : TMDB ne le fournit pas. Il faut une API commerciale qui détaille audio et sous-titres par offre (ex. Streaming Availability API) *(couverture France et prix à vérifier)* |
+| Si une **version doublée existe** tout court (indépendamment des plateformes) | Partiel : Wikidata, saisie éditoriale |
+
+On **ne récupère pas** ces informations en aspirant les sites des plateformes : c'est en général interdit par leurs conditions et fragile techniquement.
+
+### 7.2 Trois sources combinées
+
+1. **Fournisseur de données** : plateformes par pays (TMDB), puis langues audio et sous-titres par offre (API commerciale, quand le projet le justifie).
+2. **Contributions des utilisateurs** : « Signaler : la VF est disponible sur X ». Une contribution devient visible après confirmation par d'autres utilisateurs ou par la modération, et porte toujours sa date.
+3. **Saisie éditoriale** pour les cas importants (plateformes d'anime comme Crunchyroll ou ADN, sorties en simultané avec le Japon).
+
+### 7.3 Modèle de données
+
+**Offre** — une possibilité concrète de regarder une partie d'œuvre :
+
+| Champ | Contenu |
+|---|---|
+| `partie` | La saison ou le film concerné (les offres diffèrent souvent d'une saison à l'autre) |
+| `plateforme`, `pays` | Ex. Netflix, FR |
+| `type` | `abonnement`, `location`, `achat`, `gratuit`, `gratuit_avec_pub` |
+| `audio[]` | Langues des pistes audio (codes BCP 47 : `ja`, `fr`, `fr-CA`, `ko`…) ; drapeau `originale` |
+| `sous_titres[]` | Langues + type : standard, sourds et malentendants |
+| `audiodescription` | Oui / non / inconnu |
+| `lien` | Lien direct vers la plateforme |
+| `debut`, `fin` | Dates de disponibilité si connues (« quitte Netflix le 30 novembre ») |
+| `source`, `verifie_le`, `confiance` | Provenance, fraîcheur et fiabilité |
+
+**Version** — une version linguistique qui existe, indépendamment des plateformes (« un doublage français existe, studio X ») : elle permet de dire « la VF existe, mais n'est disponible sur aucune plateforme en France ».
+
+### 7.4 Ce que voit l'utilisateur
+
+- **Ses préférences**, réglées une fois : pays, plateformes auxquelles il est abonné, façon de regarder (« VO sous-titrée français », « VF de préférence », « VO sans sous-titres »).
+- **Bloc « Où regarder »** sur chaque page d'œuvre, trié selon ces préférences, avec des badges clairs : **VO** · **VF** · **VOSTFR** · **SME** (sous-titres pour sourds et malentendants) · **AD** (audiodescription).
+- **Résumés en une ligne** : « VO uniquement sur Crunchyroll et ADN », « VF sur Netflix, VOSTFR sur Crunchyroll », « Toutes les langues sur Prime Video ».
+- **Fraîcheur affichée** : « vérifié il y a 3 jours ».
+- **Honnêteté** : si une langue n'est pas connue, on l'affiche comme **inconnue**. On ne devine jamais.
+- **Dans « Ce soir »** : contrainte possible « disponible sur mes abonnements, dans ma langue ».
+- **Alertes** : « La VF de cette saison vient d'arriver sur X », « Cette œuvre quitte X dans 7 jours ».
+
+## 8. Feuille de route
 
 | Lot | Contenu | Résultat observable |
 |---|---|---|
@@ -184,7 +232,7 @@ Le site a un thème par défaut. Une page d'œuvre peut **redéfinir ces variabl
 | **3** | Statuts (En cours, Terminé, En pause, Abandonné, Prévu, Revisionnage, J'aime, Pas pour moi), progression par épisode, historique d'actions, imports AniList / MyAnimeList / Letterboxd | On retrouve son historique en 2 minutes |
 | **4** | « Ce soir », profil visible et corrigeable, explications qui citent des œuvres, découverte entre univers, parcours d'initiation | Trois propositions expliquées, dont une qui fait sortir de ses habitudes |
 | **5** | Comptes, fusion de l'historique invité, export et suppression (RGPD) | Même historique sur le téléphone et l'ordinateur |
-| **6** | « Où le regarder » en France, radar des sorties | On sait sur quelle plateforme lancer l'œuvre choisie |
+| **6** | « Où regarder » (§7) : plateformes par pays, préférences de langue, badges VO/VF/VOSTFR, puis langues par offre et contributions des utilisateurs ; radar des sorties | On sait sur quelle plateforme lancer l'œuvre, et dans quelle langue |
 | **7** | Design haut de gamme : personnalisation par œuvre (automatique puis éditoriale), jaquettes générées, polices (§6) | Chaque page d'œuvre a sa propre identité visuelle |
 | **Avant ouverture publique** | Performance, accessibilité, suivi des erreurs, sauvegardes, relecture des conditions des sources | — |
 
@@ -192,18 +240,19 @@ Le site a un thème par défaut. Une page d'œuvre peut **redéfinir ces variabl
 
 **Monétisation** : volontairement hors sujet pour l'instant. Seule contrainte retenue dès maintenant : les sources sont interchangeables (§3), pour ne pas se fermer de porte plus tard.
 
-## 8. Décisions à valider
+## 9. Décisions à valider
 
 - [ ] **Vision** (§1) : la promesse et le public conviennent.
 - [ ] **Classification** (§2) : axes indépendants + 4 rubriques dérivées exclusives ; anime = animation d'origine JP, CN ou KR.
 - [ ] **Sources** (§3) : TMDB + AniList + Wikidata (+ TVmaze en complément) ; retrait des jeux de données IMDb et de l'instantané Wikipédia.
 - [ ] **Modèle** (§4) : Œuvre / Partie / Titre / Identifiant externe / Relation / Concept / Crédit, avec provenance par champ.
 - [ ] **Fiches Savoir** (§5) : format, emplacements, règles de contenu, stockage en Markdown dans le dépôt.
+- [ ] **Où regarder** (§7) : offres par plateforme et par langue, trois sources (fournisseur, contributions, éditorial), « inconnu » plutôt que deviner.
 - [ ] **Design** (§6) : contrat de thème dès le lot 2, personnalisation par œuvre et jaquettes au lot 7.
 - [ ] **Stack** : Next.js + TypeScript + PostgreSQL managé. Hébergement proposé : Vercel + Neon ou Supabase (comme KOMA).
 - [ ] **Nom du produit** : à trouver. « Ciné Catalogue » décrit ce qu'on quitte.
 
-## 9. Questions encore ouvertes (n'empêchent pas de démarrer le lot 1)
+## 10. Questions encore ouvertes (n'empêchent pas de démarrer le lot 1)
 
 - Langues de l'interface : français seul au lancement, ou français + anglais ?
 - Hébergeur exact de PostgreSQL (Neon ou Supabase) : à trancher au début du lot 1, selon le besoin ou non d'une authentification intégrée au lot 5.
