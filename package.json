@@ -6,11 +6,20 @@
   "scripts": {
     "test": "vitest run",
     "lint": "eslint .",
-    "serve": "npx --yes serve public"
+    "typecheck": "tsc -p tsconfig.json",
+    "serve": "npx --yes serve public",
+    "ingest": "tsx scripts/ingest.ts"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/node": "^24.13.6",
     "eslint": "^10.8.1",
     "globals": "^17.11.0",
+    "tsx": "^4.23.14",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

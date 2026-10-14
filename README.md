@@ -4,6 +4,46 @@ Interface web de catalogue de films : recherche, filtre par genre, likes
 persistés, et recommandations basées sur les genres aimés — 100% statique,
 sans backend, **sans clé API**, prête à déployer sur GitHub Pages.
 
+> **En cours de refonte.** Le projet devient un guide « quoi regarder ce soir »
+> pour films, séries, anime et dessins animés : voir
+> [docs/LOT-0-FONDATIONS.md](docs/LOT-0-FONDATIONS.md). Le site statique décrit
+> ci-dessous reste en ligne pendant la migration.
+
+## Nouveau catalogue (lot 1)
+
+Import des œuvres depuis trois sources ouvertes, **sans clé d'API** :
+AniList (anime, donghua, aeni), Wikidata (films, séries, dessins animés,
+liens entre identifiants) et TVmaze (séries). Les fiches sont rapprochées
+en œuvres (identifiants partagés, saisons AniList regroupées, puis titre +
+année en dernier recours), vérifiées, puis enregistrées dans PostgreSQL
+(PGlite en local : un simple dossier, sans serveur).
+
+```bash
+npm run ingest                    # import complet dans data/db
+```
+
+```bash
+npm run ingest -- --essai         # rapport de qualité, sans rien écrire
+```
+
+```bash
+npm run ingest -- --sources anilist --anilist-max 200 --oeuvres-min 10
+```
+
+- Les réponses brutes sont mises en cache 24 h dans `data/raw/` (`--rafraichir` pour l'ignorer).
+- Le rapport du dernier import est écrit dans `data/rapports/dernier-import.json`.
+- Si un seuil de qualité n'est pas respecté (invariants, doublons, couverture,
+  chute du nombre d'œuvres), **rien n'est écrit** et la commande échoue.
+
+Organisation :
+
+| Dossier | Rôle |
+|---|---|
+| `src/domain/` | Modèle, classification (rubriques), genres, invariants — sans aucune dépendance technique |
+| `src/ingestion/` | Un adaptateur par source, rapprochement des fiches, rapport de qualité |
+| `src/db/` | Schéma PostgreSQL et enregistrement du catalogue |
+| `scripts/ingest.ts` | Commande d'import |
+
 ## Fonctionnalités
 
 - **Catalogue** de ~4000 films (2008–2023) : recherche par titre ou acteur,
