@@ -128,34 +128,82 @@ Une fiche déjà lue n'est plus mise en avant. Aucune fiche ne bloque l'accès �
 - **Stockage** : fichiers Markdown versionnés dans le dépôt (un fichier par fiche, métadonnées en en-tête : identifiant, type, niveau, concepts liés, œuvres liées, sources). Relisibles, corrigeables, historisés par git.
 - **Démarrage** : une vingtaine de fiches couvrant les termes les plus fréquents du catalogue (démographies, formats d'anime, 8 à 10 genres, 3 parcours).
 
-## 6. Feuille de route
+## 6. Design et personnalisation par œuvre
+
+Ambition : un design haut de gamme, avec des jaquettes originales et une identité visuelle propre à chaque œuvre. **La réalisation complète vient après le cœur fonctionnel (lot 7)**, mais deux choix doivent être faits dès le lot 2 pour que ce soit possible sans refonte.
+
+### 6.1 À poser dès le lot 2 : le contrat de thème
+
+Tous les composants lisent leur apparence **uniquement** dans des variables de thème, jamais dans des valeurs codées en dur :
+
+| Variable | Rôle |
+|---|---|
+| `--surface`, `--surface-raised` | Fonds |
+| `--ink`, `--ink-muted` | Textes |
+| `--accent`, `--accent-ink` | Couleur d'accent et texte posé dessus |
+| `--font-display`, `--font-text` | Police de titre, police de lecture |
+| `--texture` | Motif de fond (grain, trame, aplat…) |
+| `--radius`, `--motion` | Arrondis, style d'animation |
+
+Le site a un thème par défaut. Une page d'œuvre peut **redéfinir ces variables** pour elle seule : la personnalisation par œuvre devient une question de données, pas de code.
+
+### 6.2 Trois niveaux de personnalisation (lot 7)
+
+1. **Automatique, pour toutes les œuvres.**
+   - Palette extraite de l'affiche côté serveur, puis **corrigée automatiquement pour respecter les contrastes d'accessibilité** (WCAG AA).
+   - Préréglage typographique et texture choisis selon la rubrique, le genre et l'époque : grain argentique pour un film noir, trame façon manga pour un seinen, aplats nets pour un dessin animé…
+2. **Éditorial, pour les œuvres vedettes.** Un fichier de thème par œuvre (même principe que les fiches Savoir) : polices, couleurs, motif, mise en page de l'en-tête, animation d'entrée.
+3. **Utilisateur (à confirmer).** Choisir un style de jaquette pour sa propre bibliothèque.
+
+### 6.3 Jaquettes originales
+
+- **Jaquettes générées** pour chaque œuvre : composition typographique (titre dans la police d'affichage du thème), palette et texture de l'œuvre. Elles servent aussi d'image de partage sur les réseaux sociaux.
+- Intérêt double : un rendu cohérent même quand l'affiche officielle manque, et **des visuels qui nous appartiennent**, contrairement aux affiches des studios.
+- Limite : ne pas imiter les logos officiels ni les marques déposées.
+
+### 6.4 Polices
+
+- Uniquement des polices dont la licence autorise l'usage public et commercial : Google Fonts (licence OFL), Fontshare (licence ITF Free Font) *(à vérifier police par police)*.
+- Une sélection restreinte de quelques familles, préchargées et réduites aux caractères utiles, pour ne pas dégrader le temps de chargement.
+- Vérifier que chaque police d'affichage gère les accents français et, pour les titres originaux, les caractères japonais, chinois et coréens (sinon, police de secours dédiée).
+
+### 6.5 Garde-fous
+
+- Contraste vérifié automatiquement pour chaque thème généré.
+- Respect du réglage « réduire les animations » du système.
+- Mode clair et mode sombre pour le thème par défaut.
+- Budget de performance : la personnalisation ne doit pas ralentir l'affichage d'une page d'œuvre.
+
+## 7. Feuille de route
 
 | Lot | Contenu | Résultat observable |
 |---|---|---|
 | **0** | Ce document validé | Décisions figées |
 | **1** | Modèle de données §4 ; acquisition TMDB + AniList + Wikidata vers PostgreSQL ; rapprochement des identités ; contrôles de qualité en CI | Une base qui contient films, séries, anime et dessins animés, sans doublons, avec la provenance |
-| **2** | Application Next.js + TypeScript : recherche côté serveur (titres multilingues), une page par œuvre, rubriques §2.2, mode invité ; premières fiches Savoir et mini-cartes | On cherche « L'Attaque des Titans » et on tombe sur *Shingeki no Kyojin*, on clique sur « Seinen » et on comprend |
+| **2** | Application Next.js + TypeScript : recherche côté serveur (titres multilingues), une page par œuvre, rubriques §2.2, mode invité ; premières fiches Savoir et mini-cartes ; **contrat de thème** (§6.1) et thème par défaut soigné | On cherche « L'Attaque des Titans » et on tombe sur *Shingeki no Kyojin*, on clique sur « Seinen » et on comprend |
 | **3** | Statuts (En cours, Terminé, En pause, Abandonné, Prévu, Revisionnage, J'aime, Pas pour moi), progression par épisode, historique d'actions, imports AniList / MyAnimeList / Letterboxd | On retrouve son historique en 2 minutes |
 | **4** | « Ce soir », profil visible et corrigeable, explications qui citent des œuvres, découverte entre univers, parcours d'initiation | Trois propositions expliquées, dont une qui fait sortir de ses habitudes |
 | **5** | Comptes, fusion de l'historique invité, export et suppression (RGPD) | Même historique sur le téléphone et l'ordinateur |
-| **6** | « Où le regarder » en France, radar des sorties, refonte visuelle complète | On sait sur quelle plateforme lancer l'œuvre choisie |
+| **6** | « Où le regarder » en France, radar des sorties | On sait sur quelle plateforme lancer l'œuvre choisie |
+| **7** | Design haut de gamme : personnalisation par œuvre (automatique puis éditoriale), jaquettes générées, polices (§6) | Chaque page d'œuvre a sa propre identité visuelle |
 | **Avant ouverture publique** | Performance, accessibilité, suivi des erreurs, sauvegardes, relecture des conditions des sources | — |
 
 **Migration** : la nouvelle application est construite dans ce dépôt à côté de l'actuelle ; le site actuel reste en ligne jusqu'à ce que la nouvelle version fasse au moins tout ce qu'il fait. Les fonctions pures déjà testées (recherche, score, explication) sont portées en TypeScript. `scripts/refresh_catalog.py` devient le point de départ du module d'acquisition.
 
 **Monétisation** : volontairement hors sujet pour l'instant. Seule contrainte retenue dès maintenant : les sources sont interchangeables (§3), pour ne pas se fermer de porte plus tard.
 
-## 7. Décisions à valider
+## 8. Décisions à valider
 
 - [ ] **Vision** (§1) : la promesse et le public conviennent.
 - [ ] **Classification** (§2) : axes indépendants + 4 rubriques dérivées exclusives ; anime = animation d'origine JP, CN ou KR.
 - [ ] **Sources** (§3) : TMDB + AniList + Wikidata (+ TVmaze en complément) ; retrait des jeux de données IMDb et de l'instantané Wikipédia.
 - [ ] **Modèle** (§4) : Œuvre / Partie / Titre / Identifiant externe / Relation / Concept / Crédit, avec provenance par champ.
 - [ ] **Fiches Savoir** (§5) : format, emplacements, règles de contenu, stockage en Markdown dans le dépôt.
+- [ ] **Design** (§6) : contrat de thème dès le lot 2, personnalisation par œuvre et jaquettes au lot 7.
 - [ ] **Stack** : Next.js + TypeScript + PostgreSQL managé. Hébergement proposé : Vercel + Neon ou Supabase (comme KOMA).
 - [ ] **Nom du produit** : à trouver. « Ciné Catalogue » décrit ce qu'on quitte.
 
-## 8. Questions encore ouvertes (n'empêchent pas de démarrer le lot 1)
+## 9. Questions encore ouvertes (n'empêchent pas de démarrer le lot 1)
 
 - Langues de l'interface : français seul au lancement, ou français + anglais ?
 - Hébergeur exact de PostgreSQL (Neon ou Supabase) : à trancher au début du lot 1, selon le besoin ou non d'une authentification intégrée au lot 5.
