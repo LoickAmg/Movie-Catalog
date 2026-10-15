@@ -22,7 +22,11 @@ interface Base {
   origine: Origine;
 }
 
+/** Correction du profil de goûts, trait par trait (lot 4). */
+export type ValeurReglage = "plus" | "moins" | "jamais";
+
 export type Evenement =
+  | (Omit<Base, "oeuvre"> & { type: "reglage"; oeuvre?: undefined; trait: string; reglage: ValeurReglage | null })
   | (Base & { type: "statut"; statut: Statut })
   | (Base & { type: "avis"; avis: Avis | null })
   | (Base & { type: "progression"; partie: string; episode: number })
@@ -47,6 +51,7 @@ function chronologique(evenements: readonly Evenement[]): Evenement[] {
 export function etatsDepuis(evenements: readonly Evenement[]): Map<string, EtatSuivi> {
   const etats = new Map<string, EtatSuivi>();
   for (const e of chronologique(evenements)) {
+    if (e.type === "reglage") continue;
     if (e.type === "retrait") {
       etats.delete(e.oeuvre);
       continue;
@@ -108,17 +113,18 @@ export function validerJournal(donnees: unknown): { evenements: Evenement[]; rej
   const ids = new Set<string>();
   for (const brut of donnees) {
     const e = brut as Partial<Evenement> & Record<string, unknown>;
-    const base =
-      e &&
-      typeof e.id === "string" &&
-      !ids.has(e.id) &&
-      typeof e.oeuvre === "string" &&
-      /^[a-z]+-[A-Za-z0-9]+$/.test(e.oeuvre) &&
-      typeof e.date === "string" &&
-      DATE_ISO.test(e.date) &&
-      ORIGINES.includes(e.origine as Origine);
+    const commun =
+      e && typeof e.id === "string" && !ids.has(e.id) && typeof e.date === "string" && DATE_ISO.test(e.date) && ORIGINES.includes(e.origine as Origine);
+    const reglage =
+      commun &&
+      e.type === "reglage" &&
+      typeof e.trait === "string" &&
+      /^(genre|theme|demo|rubrique|origine|credit):[\p{L}\p{N}_-]{1,60}$/u.test(e.trait) &&
+      (e.reglage === null || ["plus", "moins", "jamais"].includes(e.reglage as string));
+    const base = commun && typeof e.oeuvre === "string" && /^[a-z]+-[A-Za-z0-9]+$/.test(e.oeuvre);
     const valide =
-      base &&
+      reglage ||
+      (base &&
       ((e.type === "statut" && STATUTS.includes(e.statut as Statut)) ||
         (e.type === "avis" && (e.avis === null || AVIS.includes(e.avis as Avis))) ||
         (e.type === "progression" &&
@@ -126,7 +132,7 @@ export function validerJournal(donnees: unknown): { evenements: Evenement[]; rej
           Number.isInteger(e.episode) &&
           (e.episode as number) >= 0 &&
           (e.episode as number) < 100_000) ||
-        e.type === "retrait");
+        e.type === "retrait"));
     if (!valide) {
       rejetes++;
       continue;
@@ -135,6 +141,17 @@ export function validerJournal(donnees: unknown): { evenements: Evenement[]; rej
     evenements.push(e as Evenement);
   }
   return { evenements, rejetes };
+}
+
+/** Dernier réglage de chaque trait (un réglage `null` annule le précédent). */
+export function reglagesDepuis(evenements: readonly Evenement[]): Map<string, ValeurReglage> {
+  const reglages = new Map<string, ValeurReglage>();
+  for (const e of chronologique(evenements)) {
+    if (e.type !== "reglage") continue;
+    if (e.reglage) reglages.set(e.trait, e.reglage);
+    else reglages.delete(e.trait);
+  }
+  return reglages;
 }
 
 /** Fusionne deux journaux sans doublon (même identifiant = même action). */

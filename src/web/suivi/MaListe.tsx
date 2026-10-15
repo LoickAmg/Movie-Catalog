@@ -162,7 +162,13 @@ export function MaListe() {
               .map((e) => (
                 <li key={e.id}>
                   <time dateTime={e.date}>{FORMAT_DATE.format(new Date(e.date))}</time> —{" "}
-                  <Link href={`/oeuvre/${e.oeuvre}`}>{cartes.get(e.oeuvre)?.titre ?? e.oeuvre}</Link> : {decrire(e)}
+                  {e.oeuvre ? (
+                    <>
+                      <Link href={`/oeuvre/${e.oeuvre}`}>{cartes.get(e.oeuvre)?.titre ?? e.oeuvre}</Link> : {decrire(e)}
+                    </>
+                  ) : (
+                    <Link href="/mon-profil">{decrire(e)}</Link>
+                  )}
                 </li>
               ))}
           </ol>

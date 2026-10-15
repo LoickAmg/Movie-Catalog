@@ -5,6 +5,7 @@ import { oeuvresParCles } from "../../../catalogue/lecture.ts";
 import { LIBELLES_TYPE } from "../../../savoir/fiches.ts";
 import { Grille } from "../../../web/composants/Cartes.tsx";
 import { AvertissementBrouillon, CarteFiche, Markdown } from "../../../web/composants/Savoir.tsx";
+import { ParcoursSuivi } from "../../../web/decision/ParcoursSuivi.tsx";
 import { base, fiches } from "../../../web/serveur.ts";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,7 @@ export default async function PageFiche({ params }: { params: Promise<Params> })
       {oeuvres.length > 0 && (
         <section className="section" aria-labelledby="pour-comprendre">
           <h2 id="pour-comprendre">{fiche.type === "parcours" ? "Le parcours" : "Pour comprendre"}</h2>
+          {fiche.type === "parcours" && <ParcoursSuivi oeuvres={oeuvres.map((o) => o.id)} />}
           <Grille cartes={oeuvres} />
         </section>
       )}

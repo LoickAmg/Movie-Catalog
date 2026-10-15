@@ -26,6 +26,9 @@ export default function Racine({ children }: { children: ReactNode }) {
               Ciné <span>Catalogue</span>
             </Link>
             <nav className="navigation" aria-label="Rubriques">
+              <Link href="/ce-soir" className="lien-ce-soir">
+                Ce soir
+              </Link>
               {RUBRIQUES_UI.map((r) => (
                 <Link key={r.rubrique} href={r.chemin}>
                   {r.libelle}

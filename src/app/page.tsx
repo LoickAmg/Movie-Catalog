@@ -7,7 +7,7 @@ import { base, fiches } from "../web/serveur.ts";
 
 export const dynamic = "force-dynamic";
 
-const FICHES_ACCUEIL = ["debuter-anime", "demographies", "anime-ou-dessin-anime", "fantasy-ou-fantastique"];
+const FICHES_ACCUEIL = ["debuter-anime", "cinema-coreen", "animation-adultes", "debuter-donghua"];
 
 export default async function Accueil() {
   const db = await base();
@@ -42,7 +42,14 @@ export default async function Accueil() {
             autoComplete="off"
           />
         </form>
-        <p className="bientot">Bientôt : trois propositions pour ce soir, choisies selon vos envies, avec la raison de chaque choix.</p>
+        <div className="ligne-actions">
+          <Link href="/ce-soir" className="bouton bouton-principal bouton-grand">
+            Trois propositions pour ce soir
+          </Link>
+          <Link href="/comprendre/debuter-anime" className="bouton">
+            Jamais vu d'anime ? Commencez ici
+          </Link>
+        </div>
       </section>
 
       <nav className="tuiles" aria-label="Rubriques">

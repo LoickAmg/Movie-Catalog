@@ -1,4 +1,4 @@
-import type { Avis, Evenement, Statut } from "../../domain/suivi.ts";
+import type { Avis, Evenement, Statut, ValeurReglage } from "../../domain/suivi.ts";
 
 export const STATUTS_UI: Array<{ statut: Statut; libelle: string; court: string }> = [
   { statut: "prevu", libelle: "À voir", court: "À voir" },
@@ -13,6 +13,8 @@ export function libelleStatut(statut: Statut, film = false): string {
   if (statut === "termine" && film) return "Vu";
   return STATUTS_UI.find((s) => s.statut === statut)!.libelle;
 }
+
+export const REGLAGES_UI: Record<ValeurReglage, string> = { plus: "Plus", moins: "Moins", jamais: "Jamais" };
 
 export const AVIS_UI: Record<Avis, string> = { jaime: "J'aime", pas_pour_moi: "Pas pour moi" };
 
@@ -36,5 +38,7 @@ export function decrire(e: Evenement): string {
       return `Épisode ${e.episode}${suffixe}`;
     case "retrait":
       return `Retiré de la liste${suffixe}`;
+    case "reglage":
+      return e.reglage ? `Profil : « ${REGLAGES_UI[e.reglage]} » pour un goût${suffixe}` : `Profil : réglage annulé${suffixe}`;
   }
 }

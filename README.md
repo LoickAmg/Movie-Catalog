@@ -62,6 +62,16 @@ npm run dev
   XML) et Letterboxd (export CSV). Les fichiers sont lus dans le navigateur ;
   seuls identifiants et titres partent au serveur (`/api/correspondances`).
   Réimporter le même fichier ne crée pas de doublon.
+- **« Ce soir » (lot 4)** : temps disponible, film ou série, envie du moment →
+  trois propositions expliquées (« Vous avez aimé X et Y : thriller et seinen »),
+  dont une découverte hors des habitudes ; « Autre chose » ne repropose jamais la
+  même œuvre ; les séries en cours sont proposées à part (« Reprendre »).
+  Le serveur fournit des candidats (`/api/candidats`) ; le profil et le
+  classement (`src/domain/profil.ts`, `src/domain/decision.ts`) restent dans le navigateur.
+- **« Mes goûts »** : le profil déduit du suivi, chaque goût avec les œuvres qui
+  l'expliquent, et des réglages « Plus », « Moins », « Jamais » enregistrés dans le journal.
+- **Parcours d'initiation** (fiches `type: parcours`) : avancement d'après « Ma liste »
+  et ajout du parcours à « À voir » en un clic.
 - La base PGlite ne s'ouvre que dans un seul processus : arrêtez `npm run dev`
   avant de relancer `npm run ingest`.
 
