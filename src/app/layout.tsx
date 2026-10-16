@@ -55,7 +55,11 @@ export default function Racine({ children }: { children: ReactNode }) {
               <a href="https://www.tvmaze.com">TVmaze</a> (CC BY-SA). Les affiches appartiennent à leurs ayants droit. Chaque fiche indique la
               source de ses informations.
             </p>
-            <p>Version en construction : l'ancien catalogue reste disponible pendant la migration.</p>
+            <nav aria-label="Informations" className="liens-pied">
+              <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/confidentialite">Confidentialité</Link>
+              <Link href="/contact">Contact</Link>
+            </nav>
           </div>
         </footer>
       </body>

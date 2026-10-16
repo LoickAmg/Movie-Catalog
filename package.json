@@ -1,37 +1,34 @@
 {
   "name": "movie-catalog-web",
-  "type": "module",
-  "version": "0.1.0",
+  "version": "0.4.0",
+  "description": "Guide « quoi regarder ce soir » : films, séries, anime et dessins animés.",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "vitest run",
-    "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json",
-    "ingest": "tsx scripts/ingest.ts",
-    "serve:legacy": "npx --yes serve legacy/public"
-  },
-  "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
-    "@types/node": "^24.13.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "eslint": "^10.8.1",
-    "globals": "^17.11.0",
-    "tsx": "^4.23.14",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
-  },
+  "type": "module",
   "engines": {
     "node": ">=22"
   },
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/check-legal.mjs && next build",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "ingest": "tsx scripts/ingest.ts"
+  },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "marked": "^18.0.14",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.14",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }

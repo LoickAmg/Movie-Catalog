@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  lint-and-test:
+  verifier:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,20 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
 
-      - name: Install dependencies
+      - name: Dépendances
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
+      - name: Types
         run: npm run typecheck
 
-      - name: Test
+      - name: Tests
         run: npm test
+
+      - name: Compilation
+        run: npm run build

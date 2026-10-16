@@ -1041,3 +1041,9 @@ button.etiquette::after {
 .parcours-suivi {
   margin-bottom: 20px;
 }
+
+.liens-pied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}

@@ -1,6 +1,8 @@
 # Lot 0 — Fondations
 
-> Document de décision. Rien n'est codé tant que la section « Décisions à valider » n'est pas cochée.
+> Document de décision, rédigé avant le code et tenu à jour.
+>
+> **Avancement au 16 octobre 2026 : lots 1 à 4 réalisés** (catalogue, application, suivi et imports, « Ce soir » et profil). Prochain : lot 5 (comptes et synchronisation).
 > Rédigé le 2026-10-14. Les points marqués *(à vérifier)* concernent des conditions d'utilisation de tiers qui doivent être relues à la source avant tout lancement public.
 
 ## 1. Vision en une page
@@ -242,14 +244,14 @@ On **ne récupère pas** ces informations en aspirant les sites des plateformes 
 
 ## 9. Décisions à valider
 
-- [ ] **Vision** (§1) : la promesse et le public conviennent.
-- [ ] **Classification** (§2) : axes indépendants + 4 rubriques dérivées exclusives ; anime = animation d'origine JP, CN ou KR.
-- [ ] **Sources** (§3) : TMDB + AniList + Wikidata (+ TVmaze en complément) ; retrait des jeux de données IMDb et de l'instantané Wikipédia.
-- [ ] **Modèle** (§4) : Œuvre / Partie / Titre / Identifiant externe / Relation / Concept / Crédit, avec provenance par champ.
-- [ ] **Fiches Savoir** (§5) : format, emplacements, règles de contenu, stockage en Markdown dans le dépôt.
+- [x] **Vision** (§1) : la promesse et le public conviennent.
+- [x] **Classification** (§2) : axes indépendants + 4 rubriques dérivées exclusives ; anime = animation d'origine JP, CN ou KR.
+- [x] **Sources** (§3) : AniList + Wikidata + TVmaze en place, TMDB en attente d'une clé ; jeux de données IMDb et instantané Wikipédia retirés.
+- [x] **Modèle** (§4) : Œuvre / Partie / Titre / Identifiant externe / Relation / Concept / Crédit, avec provenance par champ.
+- [x] **Fiches Savoir** (§5) : format, emplacements, règles de contenu, stockage en Markdown dans le dépôt.
 - [ ] **Où regarder** (§7) : offres par plateforme et par langue, trois sources (fournisseur, contributions, éditorial), « inconnu » plutôt que deviner.
-- [ ] **Design** (§6) : contrat de thème dès le lot 2, personnalisation par œuvre et jaquettes au lot 7.
-- [ ] **Stack** : Next.js + TypeScript + PostgreSQL managé. Hébergement proposé : Vercel + Neon ou Supabase (comme KOMA).
+- [x] **Design** (§6) : contrat de thème en place depuis le lot 2 ; personnalisation par œuvre et jaquettes au lot 7.
+- [ ] **Stack** : Next.js + TypeScript + PostgreSQL en place (PGlite en local). Reste à choisir l'hébergement (Vercel + Neon ou Supabase proposé), au lot 5.
 - [ ] **Nom du produit** : à trouver. « Ciné Catalogue » décrit ce qu'on quitte.
 
 ## 10. Questions encore ouvertes (n'empêchent pas de démarrer le lot 1)

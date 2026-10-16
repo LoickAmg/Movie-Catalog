@@ -1,9 +1,14 @@
+# Dépendances et compilation
 node_modules/
-.DS_Store
-data/imdb-cache/
-data/raw/
-data/db/
-data/rapports/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+
+# Données locales : base PGlite, réponses brutes des sources, rapports d'import
+data/
+
+# Variables d'environnement (voir .env.example)
+.env*
+!.env.example
+
+.DS_Store
